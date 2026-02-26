@@ -139,16 +139,35 @@ def check(dependancies, enforce_version=True):
     return needed
 
 
-def parse_requirements(requirements_path):
+def parse_requirements(requirements_path, visited=None):
     requirements = []
+    visited = visited or set()
+
+    requirements_path = os.path.abspath(requirements_path)
+    if requirements_path in visited or not os.path.exists(requirements_path):
+        return requirements
+    visited.add(requirements_path)
+
     with open(requirements_path, "r", encoding="utf-8") as file:
-        for line in file:
-            line = line.strip()
-            if not line or line.startswith("#"):
+        for raw_line in file:
+            line = raw_line.split("#", 1)[0].strip()
+            if not line:
                 continue
+
             if line.startswith(("-r", "--requirement")):
+                include = line.split(maxsplit=1)
+                if len(include) == 2:
+                    include_path = include[1].strip()
+                    include_path = os.path.join(os.path.dirname(requirements_path), include_path)
+                    requirements += parse_requirements(include_path, visited)
                 continue
+
+            # pip install options that do not represent packages
+            if line.startswith(("-c", "--constraint", "--index-url", "--extra-index-url", "--find-links", "-f", "--pre")):
+                continue
+
             requirements.append(line)
+
     return requirements
 
 
@@ -158,6 +177,8 @@ def load_inference_requirements():
         os.path.join(infer_path, "requirements.txt"),
         os.path.join(infer_path, "requirements_inference.txt"),
         os.path.join(infer_path, "requirements", "requirements.txt"),
+        os.path.join(infer_path, "requirements", "requirements_inference.txt"),
+        os.path.join(infer_path, "requirements", "inference.txt"),
     ]
     for requirements in candidates:
         if os.path.exists(requirements):
