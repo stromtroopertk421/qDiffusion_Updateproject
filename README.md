@@ -1,6 +1,6 @@
 ## Qt GUI for Stable diffusion
 --------
-Built from the ground up alongside [sd-inference-server](https://github.com/arenasys/sd-inference-server), the backend for this GUI.
+Built from the ground up alongside [sd-inference-server](https://github.com/stromtroopertk421/sd-inference-server), the backend for this GUI.
 ![example](https://github.com/arenasys/qDiffusion/raw/master/source/screenshot.png)
 \*new\* Discord: [Arena Systems](https://discord.gg/WdjKqUGefU).
 

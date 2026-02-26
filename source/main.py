@@ -138,6 +138,34 @@ def check(dependancies, enforce_version=True):
             pass
     return needed
 
+
+def parse_requirements(requirements_path):
+    requirements = []
+    with open(requirements_path, "r", encoding="utf-8") as file:
+        for line in file:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith(("-r", "--requirement")):
+                continue
+            requirements.append(line)
+    return requirements
+
+
+def load_inference_requirements():
+    infer_path = os.path.join("source", "sd-inference-server")
+    candidates = [
+        os.path.join(infer_path, "requirements.txt"),
+        os.path.join(infer_path, "requirements_inference.txt"),
+        os.path.join(infer_path, "requirements", "requirements.txt"),
+    ]
+    for requirements in candidates:
+        if os.path.exists(requirements):
+            return parse_requirements(requirements)
+
+    fallback = os.path.join("source", "requirements_inference.txt")
+    return parse_requirements(fallback)
+
 class Installer(QThread):
     output = pyqtSignal(str)
     installing = pyqtSignal(str)
@@ -236,11 +264,8 @@ class Coordinator(QObject):
         except Exception:
             pass
 
-        with open(os.path.join("source", "requirements_gui.txt")) as file:
-            self.required = [line.rstrip() for line in file]
-
-        with open(os.path.join("source", "requirements_inference.txt")) as file:
-            self.optional = [line.rstrip() for line in file]
+        self.required = parse_requirements(os.path.join("source", "requirements_gui.txt"))
+        self.optional = load_inference_requirements()
 
         self.find_needed()
 
@@ -360,6 +385,7 @@ class Coordinator(QObject):
         needed += self.required_need
 
         if needed:
+            needed = list(dict.fromkeys(needed))
             needed = ["pip", "wheel"] + needed
 
         return needed
