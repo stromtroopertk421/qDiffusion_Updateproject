@@ -20,7 +20,11 @@ QT_TARGET_VERSION = QT_VER.split("==", 1)[1]
 def qt_version_matches_target():
     try:
         from importlib import metadata
-        return metadata.version(QT_PACKAGE) == QT_TARGET_VERSION
+        if metadata.version(QT_PACKAGE) != QT_TARGET_VERSION:
+            return False
+
+        from PySide6.QtCore import Qt  # noqa: F401
+        return True
     except Exception:
         return False
 
