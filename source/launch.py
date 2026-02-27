@@ -22,10 +22,11 @@ def get_env():
     env["VIRTUAL_ENV"] = VENV_DIR
     env["PIP_CACHE_DIR"] = os.path.join(VENV_DIR, "cache")
     env["PIP_CONFIG_FILE"] = os.devnull
+    current_path = env.get("PATH", "")
     if IS_WIN:
-        env["PATH"] = VENV_DIR+"\\Scripts;" + env["PATH"]
+        env["PATH"] = VENV_DIR+"\\Scripts;" + current_path
     else:
-        env["PATH"] = VENV_DIR+"/bin:" + env["PATH"]
+        env["PATH"] = VENV_DIR+"/bin:" + current_path
     
     if not IS_WIN and not "HSA_OVERRIDE_GFX_VERSION" in env:
         env["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
@@ -62,11 +63,11 @@ def get_venv_python(gui=False):
 
 def install_venv():
     print(f"CREATING VENV... ({VENV_DIR})")
-    subprocess.run([PYTHON_RUN, "-m", "venv", VENV_DIR])
+    subprocess.run([PYTHON_RUN, "-m", "venv", VENV_DIR], check=True)
 
 def install_qt():
     print("INSTALLING PySide6...")
-    subprocess.run([get_venv_python(), "-m", "pip", "install", QT_VER], env=get_env())
+    subprocess.run([get_venv_python(), "-m", "pip", "install", QT_VER], env=get_env(), check=True)
 
 def exceptHook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
@@ -107,7 +108,7 @@ if __name__ == "__main__":
             input()
             exit()
 
-    inside_venv = VENV_DIR in sys.executable and VENV_DIR in os.environ["PATH"] and VENV_DIR == os.environ.get("VIRTUAL_ENV", "")
+    inside_venv = VENV_DIR in sys.executable and VENV_DIR in os.environ.get("PATH", "") and VENV_DIR == os.environ.get("VIRTUAL_ENV", "")
     missing_venv = not os.path.exists(VENV_DIR)
 
     if not inside_venv:

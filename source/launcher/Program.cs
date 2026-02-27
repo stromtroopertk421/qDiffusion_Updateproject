@@ -142,74 +142,99 @@ namespace qDiffusion
             void ReadExactly(Stream stream, byte[] buffer, int count)
             {
                 var total = 0;
-                while (true)
+                while (total < count)
                 {
                     int n = stream.Read(buffer, total, count - total);
+                    if (n == 0)
+                    {
+                        throw new EndOfStreamException("Unexpected end of tar archive.");
+                    }
                     total += n;
-                    if (total == count)
-                        return;
                 }
             }
 
-            void SeekExactly(Stream stream, byte[] buffer, int count)
+            var rootDir = Path.GetFullPath(outputDir);
+            if (!rootDir.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
-                ReadExactly(stream, buffer, count);
+                rootDir += Path.DirectorySeparatorChar;
             }
 
             using (var fs = File.OpenRead(filename))
+            using (var stream = new GZipStream(fs, CompressionMode.Decompress))
             {
-                using (var stream = new GZipStream(fs, CompressionMode.Decompress))
+                var block = new byte[512];
+                var buffer = new byte[1024];
+
+                while (true)
                 {
-                    var buffer = new byte[1024];
-                    while (true)
+                    ReadExactly(stream, block, block.Length);
+
+                    var name = GetString(block, 100);
+                    if (String.IsNullOrWhiteSpace(name))
                     {
-                        ReadExactly(stream, buffer, 100);
-                        var name = Encoding.ASCII.GetString(buffer, 0, 100).Split('\0')[0];
-                        if (String.IsNullOrWhiteSpace(name))
-                            break;
+                        break;
+                    }
 
-                        SeekExactly(stream, buffer, 24);
+                    var sizeString = GetString(block.Skip(124).Take(12).ToArray(), 12).Trim();
+                    var size = String.IsNullOrWhiteSpace(sizeString) ? 0 : Convert.ToInt64(sizeString, 8);
+                    var typeFlag = block[156];
+                    var prefix = GetString(block.Skip(345).Take(155).ToArray(), 155);
 
-                        ReadExactly(stream, buffer, 12);
-                        var sizeString = Encoding.ASCII.GetString(buffer, 0, 12).Split('\0')[0];
-                        var size = Convert.ToInt64(sizeString, 8);
+                    if (!String.IsNullOrWhiteSpace(prefix))
+                    {
+                        name = prefix + "/" + name;
+                    }
 
-                        SeekExactly(stream, buffer, 209);
+                    if (name.StartsWith("./"))
+                    {
+                        name = name.Substring(2);
+                    }
 
-                        ReadExactly(stream, buffer, 155);
-                        var prefix = Encoding.ASCII.GetString(buffer, 0, 155).Split('\0')[0];
-                        if (!String.IsNullOrWhiteSpace(prefix))
+                    var output = Path.GetFullPath(Path.Combine(outputDir, name.Replace('/', Path.DirectorySeparatorChar)));
+                    if (!output.StartsWith(rootDir, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidDataException($"Archive contains invalid path: {name}");
+                    }
+
+                    if (typeFlag == (byte)'5')
+                    {
+                        Directory.CreateDirectory(output);
+                    }
+                    else if (typeFlag == 0 || typeFlag == (byte)'0')
+                    {
+                        var directory = Path.GetDirectoryName(output);
+                        if (!String.IsNullOrWhiteSpace(directory))
                         {
-                            name = prefix + name;
+                            Directory.CreateDirectory(directory);
                         }
 
-                        SeekExactly(stream, buffer, 12);
-
-                        var output = Path.GetFullPath(Path.Combine(outputDir, name));
-                        if (!Directory.Exists(Path.GetDirectoryName(output)))
+                        using (var outfs = new FileStream(output, FileMode.Create, FileAccess.Write, FileShare.None))
                         {
-                            Directory.CreateDirectory(Path.GetDirectoryName(output));
-                        }
-                        using (var outfs = File.Open(output, FileMode.OpenOrCreate, FileAccess.Write))
-                        {
-                            var total = 0;
-                            var next = 0;
-                            while (true)
+                            var remaining = size;
+                            while (remaining > 0)
                             {
-                                next = Math.Min(buffer.Length, (int)size - total);
+                                var next = (int)Math.Min(buffer.Length, remaining);
                                 ReadExactly(stream, buffer, next);
                                 outfs.Write(buffer, 0, next);
-                                total += next;
-                                if (total == size)
-                                    break;
+                                remaining -= next;
                             }
                         }
+                    }
+                    else
+                    {
+                        var remaining = size;
+                        while (remaining > 0)
+                        {
+                            var next = (int)Math.Min(buffer.Length, remaining);
+                            ReadExactly(stream, buffer, next);
+                            remaining -= next;
+                        }
+                    }
 
-                        var offset = 512 - ((int)size % 512);
-                        if (offset == 512)
-                            offset = 0;
-
-                        SeekExactly(stream, buffer, offset);
+                    var padding = (512 - (size % 512)) % 512;
+                    if (padding > 0)
+                    {
+                        ReadExactly(stream, buffer, (int)padding);
                     }
                 }
             }
