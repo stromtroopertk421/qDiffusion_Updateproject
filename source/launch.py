@@ -5,6 +5,7 @@ import platform
 import traceback
 import datetime
 import importlib.util
+import shutil
 
 VENV_DIR = os.path.join(os.getcwd(), "venv")
 IS_WIN = platform.system() == 'Windows'
@@ -65,6 +66,23 @@ def install_venv():
     print(f"CREATING VENV... ({VENV_DIR})")
     subprocess.run([PYTHON_RUN, "-m", "venv", VENV_DIR], check=True)
 
+def venv_version_matches_target():
+    cfg = os.path.join(VENV_DIR, "pyvenv.cfg")
+    if not os.path.exists(cfg):
+        return False
+
+    try:
+        with open(cfg, "r", encoding="utf-8") as f:
+            for raw in f:
+                line = raw.strip().lower()
+                if line.startswith("version") and "=" in line:
+                    version = line.split("=", 1)[1].strip()
+                    return version.startswith("3.14")
+    except Exception:
+        return False
+
+    return False
+
 def install_qt():
     print("INSTALLING PySide6...")
     subprocess.run([get_venv_python(), "-m", "pip", "install", QT_VER], env=get_env(), check=True)
@@ -110,6 +128,12 @@ if __name__ == "__main__":
 
     inside_venv = VENV_DIR in sys.executable and VENV_DIR in os.environ.get("PATH", "") and VENV_DIR == os.environ.get("VIRTUAL_ENV", "")
     missing_venv = not os.path.exists(VENV_DIR)
+    stale_venv = (not missing_venv) and (not venv_version_matches_target())
+
+    if stale_venv:
+        print("REMOVING STALE VENV (expected Python 3.14)...")
+        shutil.rmtree(VENV_DIR, ignore_errors=True)
+        missing_venv = True
 
     if not inside_venv:
         if missing_venv:
