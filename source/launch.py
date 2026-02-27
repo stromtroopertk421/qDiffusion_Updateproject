@@ -10,10 +10,10 @@ VENV_DIR = os.path.join(os.getcwd(), "venv")
 IS_WIN = platform.system() == 'Windows'
 PYTHON_RUN = sys.executable
 
-QT_VER = "PyQt5==5.15.7"
+QT_VER = "PySide6==6.7.3"
 MISSING_QT = False
 try:
-    from PyQt5.QtCore import Qt
+    from PySide6.QtCore import Qt
 except Exception:
     MISSING_QT = True
 
@@ -45,7 +45,7 @@ def install_venv():
     subprocess.run([PYTHON_RUN, "-m", "venv", VENV_DIR])
 
 def install_qt():
-    print("INSTALLNG PyQt...")
+    print("INSTALLING Qt bindings...")
     if IS_WIN:
         subprocess.run([VENV_DIR+"\\Scripts\\python.exe", "-m", "pip", "install", QT_VER], env=get_env())
     else:
