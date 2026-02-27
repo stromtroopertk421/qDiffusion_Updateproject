@@ -187,6 +187,26 @@ def load_inference_requirements():
     fallback = os.path.join("source", "requirements_inference.txt")
     return parse_requirements(fallback)
 
+
+TORCH_BUILD_MATRIX = {
+    "nvidia": {
+        "torch": "2.8.0+cu129",
+        "torchvision": "0.23.0+cu129",
+        "index": "cu129",
+    },
+    "amd": {
+        "linux": {
+            "torch": "2.8.0+rocm6.4",
+            "torchvision": "0.23.0+rocm6.4",
+            "index": "rocm6.4",
+        },
+        "windows": {
+            # No Python 3.14 torch-directml build is currently available.
+            "torch-directml": None,
+        },
+    },
+}
+
 class Installer(QThread):
     output = pyqtSignal(str)
     installing = pyqtSignal(str)
@@ -197,14 +217,18 @@ class Installer(QThread):
         self.proc = None
         self.stopping = False
 
+    def _build_install_args(self, package):
+        args = ["pip", "install", "-U", package]
+        pkg = package.split("=", 1)[0]
+        if pkg in {"torch", "torchvision"} and "+" in package:
+            build_channel = package.rsplit("+", 1)[-1]
+            args += ["--index-url", "https://download.pytorch.org/whl/" + build_channel]
+        return [sys.executable.replace("pythonw", "python"), "-m"] + args
+
     def run(self):
         for p in self.packages:
             self.installing.emit(p)
-            args = ["pip", "install", "-U", p]
-            pkg = p.split("=",1)[0]
-            if pkg in {"torch", "torchvision"}:
-                args = ["pip", "install", "-U", p, "--index-url", "https://download.pytorch.org/whl/" + p.rsplit("+",1)[-1]]
-            args = [sys.executable.replace("pythonw", "python"), "-m"] + args
+            args = self._build_install_args(p)
 
             startupinfo = None
             if IS_WIN:
@@ -293,6 +317,7 @@ class Coordinator(QObject):
         qmlRegisterSingletonType(Coordinator, "gui", 1, 0, "COORDINATOR", lambda qml, js: self)
 
     def find_needed(self):
+        self.install_blocker = ""
         self.torch_version = ""
         self.torchvision_version = ""
         self.directml_version = ""
@@ -312,13 +337,16 @@ class Coordinator(QObject):
         except:
             pass
 
-        self.nvidia_torch_version = "2.1.0+cu118"
-        self.nvidia_torchvision_version = "0.16+cu118"
+        nvidia_cfg = TORCH_BUILD_MATRIX["nvidia"]
+        amd_cfg = TORCH_BUILD_MATRIX["amd"]
 
-        self.amd_torch_version = "2.1.0+rocm5.6"
-        self.amd_torchvision_version = "0.16.0+rocm5.6"
+        self.nvidia_torch_version = nvidia_cfg["torch"]
+        self.nvidia_torchvision_version = nvidia_cfg["torchvision"]
 
-        self.amd_torch_directml_version = "0.2.0.dev230426"
+        self.amd_torch_version = amd_cfg["linux"]["torch"]
+        self.amd_torchvision_version = amd_cfg["linux"]["torchvision"]
+
+        self.amd_torch_directml_version = amd_cfg["windows"]["torch-directml"]
         
         self.required_need = check(self.required, self.enforce)
         self.optional_need = check(self.optional, self.enforce)
@@ -386,20 +414,30 @@ class Coordinator(QObject):
     def get_needed(self):
         mode = self._modes[self._mode]
         needed = []
+
+        def _has_variant(version, variant):
+            return "+" in version and version.rsplit("+", 1)[-1].startswith(variant)
+
+        self.install_blocker = ""
         if mode == "nvidia":
-            if not "+cu" in self.torch_version:
+            if not _has_variant(self.torch_version, "cu"):
                 needed += ["torch=="+self.nvidia_torch_version]
-            if not "+cu" in self.torchvision_version:
+            if not _has_variant(self.torchvision_version, "cu"):
                 needed += ["torchvision=="+self.nvidia_torchvision_version]
             needed += self.optional_need
         if mode == "amd":
             if IS_WIN:
-                if not self.directml_version:
+                if self.amd_torch_directml_version is None:
+                    self.install_blocker = (
+                        "No compatible torch-directml package is currently available for this Python version on Windows. "
+                        "Use Remote mode, switch to Nvidia mode, or use a Python version supported by torch-directml."
+                    )
+                elif not self.directml_version:
                     needed += ["torch-directml==" + self.amd_torch_directml_version]
             else:
-                if not "+rocm" in self.torch_version:
+                if not _has_variant(self.torch_version, "rocm"):
                     needed += ["torch=="+self.amd_torch_version]
-                if not "+rocm" in self.torchvision_version:
+                if not _has_variant(self.torchvision_version, "rocm"):
                     needed += ["torchvision=="+self.amd_torchvision_version]
             needed += self.optional_need
 
@@ -438,6 +476,9 @@ class Coordinator(QObject):
         if self.installer:
             self.cancel.emit()
             return
+        if self.install_blocker:
+            self.output.emit("Installer blocked: " + self.install_blocker)
+            raise RuntimeError(self.install_blocker)
         packages = self.packages
         if not packages:
             self.done()
