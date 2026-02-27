@@ -468,6 +468,22 @@ class Coordinator(QObject):
 
         if needed:
             needed = list(dict.fromkeys(needed))
+
+            # Legacy forks may still pin PyQt5 in downstream requirement files.
+            # qDiffusion's GUI is PySide6-based, so rewrite stale PyQt5 requests
+            # to the active runtime binding to avoid downloading obsolete wheels.
+            filtered = []
+            needs_qt = False
+            for package in needed:
+                if package.lower().startswith("pyqt5"):
+                    needs_qt = True
+                    continue
+                filtered.append(package)
+            if needs_qt:
+                pyside_pin = next((pkg for pkg in self.required if pkg.lower().startswith("pyside6")), "PySide6==6.8.1")
+                filtered.append(pyside_pin)
+
+            needed = filtered
             needed = ["pip", "wheel"] + needed
 
         return needed
