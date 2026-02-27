@@ -14,7 +14,7 @@ IF EXIST "python\python.exe" (
 )
 
 IF NOT EXIST "python" (
-    set "PYTHON_URL=https://github.com/indygreg/python-build-standalone/releases/download/20260112/cpython-3.14.0+20260112-x86_64-pc-windows-msvc-shared-install_only.tar.gz"
+    set "PYTHON_URL=https://github.com/astral-sh/python-build-standalone/releases/download/20260211/cpython-3.14.3+20260211-x86_64-pc-windows-msvc-install_only.tar.gz"
 
     echo DOWNLOADING PYTHON...
     bitsadmin.exe /transfer "DOWNLOADING PYTHON 3.14..." "%PYTHON_URL%" "%CD%/python.tar.gz"
