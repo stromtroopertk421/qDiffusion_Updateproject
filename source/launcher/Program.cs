@@ -318,14 +318,14 @@ namespace qDiffusion
 
             process.Start();
         }
-        public static bool PythonVersionMatches(string pythonExe, string majorMinor)
+        public static bool PythonVersionMatches(string pythonExe, string expectedVersion)
         {
             if (!File.Exists(pythonExe))
             {
                 return false;
             }
 
-            ProcessStartInfo startInfo = new ProcessStartInfo(pythonExe, "-c \"import sys; print(str(sys.version_info[0]) + '.' + str(sys.version_info[1]))\"")
+            ProcessStartInfo startInfo = new ProcessStartInfo(pythonExe, "-c \"import sys; print('{}.{}.{}'.format(*sys.version_info[:3]))\"")
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -338,11 +338,35 @@ namespace qDiffusion
                 process.Start();
                 var output = process.StandardOutput.ReadToEnd().Trim();
                 process.WaitForExit();
-                return process.ExitCode == 0 && output == majorMinor;
+                return process.ExitCode == 0 && output == expectedVersion;
             }
         }
 
-        public static bool VenvVersionMatches(string venvPath, string majorMinor)
+        public static string GetPackageVersion(string pythonExe, string packageName)
+        {
+            if (!File.Exists(pythonExe))
+            {
+                return string.Empty;
+            }
+
+            ProcessStartInfo startInfo = new ProcessStartInfo(pythonExe, "-c \"from importlib import metadata; print(metadata.version('" + packageName + "'))\"")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (Process process = new Process { StartInfo = startInfo })
+            {
+                process.Start();
+                var output = process.StandardOutput.ReadToEnd().Trim();
+                process.WaitForExit();
+                return process.ExitCode == 0 ? output : string.Empty;
+            }
+        }
+
+        public static bool VenvVersionMatches(string venvPath, string expectedVersion)
         {
             var cfg = Path.Combine(venvPath, "pyvenv.cfg");
             if (!File.Exists(cfg))
@@ -356,7 +380,7 @@ namespace qDiffusion
                 if (lower.StartsWith("version") && lower.Contains("="))
                 {
                     var version = lower.Split('=')[1].Trim();
-                    return version.StartsWith(majorMinor + ".");
+                    return version.StartsWith(expectedVersion);
                 }
             }
 
@@ -385,7 +409,7 @@ namespace qDiffusion
             }
 
             var pythonExe = ".\\python\\python.exe";
-            var haveBundledPython = Directory.Exists("python") && PythonVersionMatches(pythonExe, "3.14");
+            var haveBundledPython = Directory.Exists("python") && PythonVersionMatches(pythonExe, BundledPythonVersion);
 
             if (!haveBundledPython)
             {
@@ -432,7 +456,7 @@ namespace qDiffusion
 
             var python = ".\\python\\python.exe";
 
-            if (Directory.Exists("venv") && !VenvVersionMatches("venv", "3.14"))
+            if (Directory.Exists("venv") && !VenvVersionMatches("venv", BundledPythonVersion))
             {
                 Directory.Delete("venv", true);
             }
@@ -471,7 +495,8 @@ namespace qDiffusion
             Environment.SetEnvironmentVariable("HSA_OVERRIDE_GFX_VERSION", "10.3.0");
             Environment.SetEnvironmentVariable("MIOPEN_LOG_LEVEL", "4");
 
-            if (!Directory.Exists("venv\\Lib\\site-packages\\PySide6"))
+            var installedPySide6 = GetPackageVersion(pythonCli, "PySide6");
+            if (installedPySide6 != BundledQtVersion)
             {
                 LaunchProgress();
                 progress?.SetLabel("Installing PySide6");
