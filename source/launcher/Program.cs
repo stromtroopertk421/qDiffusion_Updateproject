@@ -20,7 +20,7 @@ namespace qDiffusion
     {
         const string BundledPythonVersion = "3.14.3";
         const string BundledPythonBuild = "20260211";
-        const string BundledQtVersion = "6.8.1";
+        const string BundledQtVersion = "6.9.3";
 
         [DllImport("shell32.dll", SetLastError = true)]
         static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);

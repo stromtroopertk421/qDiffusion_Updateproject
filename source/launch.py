@@ -11,7 +11,7 @@ VENV_DIR = os.path.join(os.getcwd(), "venv")
 IS_WIN = platform.system() == 'Windows'
 PYTHON_RUN = sys.executable
 
-QT_VER = "PySide6==6.8.1"
+QT_VER = "PySide6==6.9.3"
 MISSING_QT = False
 try:
     from PySide6.QtCore import Qt
