@@ -335,10 +335,17 @@ namespace qDiffusion
 
             using (Process process = new Process { StartInfo = startInfo })
             {
-                process.Start();
-                var output = process.StandardOutput.ReadToEnd().Trim();
-                process.WaitForExit();
-                return process.ExitCode == 0 && output == majorMinor;
+                try
+                {
+                    process.Start();
+                    var output = process.StandardOutput.ReadToEnd().Trim();
+                    process.WaitForExit();
+                    return process.ExitCode == 0 && output == majorMinor;
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
 
