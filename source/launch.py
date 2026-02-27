@@ -11,12 +11,21 @@ VENV_DIR = os.path.join(os.getcwd(), "venv")
 IS_WIN = platform.system() == 'Windows'
 PYTHON_RUN = sys.executable
 
+PYTHON_TARGET_VERSION = "3.14.3"
 QT_VER = "PySide6==6.9.3"
-MISSING_QT = False
-try:
-    from PySide6.QtCore import Qt
-except Exception:
-    MISSING_QT = True
+QT_PACKAGE = "PySide6"
+QT_TARGET_VERSION = QT_VER.split("==", 1)[1]
+
+
+def qt_version_matches_target():
+    try:
+        from importlib import metadata
+        return metadata.version(QT_PACKAGE) == QT_TARGET_VERSION
+    except Exception:
+        return False
+
+
+MISSING_QT = not qt_version_matches_target()
 
 def get_env():
     env = {k:v for k,v in os.environ.items() if not k.startswith("QT") and not k.startswith("PIP") and not k.startswith("PYTHON")}
@@ -77,7 +86,7 @@ def venv_version_matches_target():
                 line = raw.strip().lower()
                 if line.startswith("version") and "=" in line:
                     version = line.split("=", 1)[1].strip()
-                    return version.startswith("3.14")
+                    return version.startswith(PYTHON_TARGET_VERSION)
     except Exception:
         return False
 
@@ -131,7 +140,7 @@ if __name__ == "__main__":
     stale_venv = (not missing_venv) and (not venv_version_matches_target())
 
     if stale_venv:
-        print("REMOVING STALE VENV (expected Python 3.14)...")
+        print(f"REMOVING STALE VENV (expected Python {PYTHON_TARGET_VERSION})...")
         shutil.rmtree(VENV_DIR, ignore_errors=True)
         missing_venv = True
 

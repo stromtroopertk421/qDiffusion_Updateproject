@@ -1,14 +1,15 @@
 @echo off
 
 set "PYTHON_VERSION_OK="
+set "PYTHON_TARGET_VERSION=3.14.3"
 
 IF NOT EXIST "python" (
     cd ..
 )
 
 IF EXIST "python\python.exe" (
-    for /f "delims=" %%V in ('python\python.exe -c "import sys; print(str(sys.version_info[0])+"."+str(sys.version_info[1]))" 2^>nul') do set "PYTHON_VERSION_OK=%%V"
-    if /I not "%PYTHON_VERSION_OK%"=="3.14" (
+    for /f "delims=" %%V in ('python\python.exe -c "import sys; print('{}.{}.{}'.format(*sys.version_info[:3]))" 2^>nul') do set "PYTHON_VERSION_OK=%%V"
+    if /I not "%PYTHON_VERSION_OK%"=="%PYTHON_TARGET_VERSION%" (
         rmdir /S /Q "python"
     )
 )

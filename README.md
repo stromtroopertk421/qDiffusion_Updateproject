@@ -24,7 +24,7 @@ Temporary exceptions:
 ### Install
 1. [Download](https://github.com/arenasys/qDiffusion/archive/refs/heads/master.zip) this repo as a zip and extract it.
 2. Run `qDiffusion.exe` (or `bash ./source/start.sh` on Linux, `sh ./source/start-mac.sh` on Mac).
-	- First-time setup provisions the bundled Python 3.14 runtime and PyQt before launch.
+	- First-time setup provisions the bundled Python 3.14 runtime and PySide6 before launch.
 	- AMD Ubuntu users need to follow: [Install ROCm](https://github.com/arenasys/qDiffusion/wiki/Install#ubuntu-22).
 3. Select a mode. `Remote`, `Nvidia` and `AMD` are available.
 	- `Remote` needs `~500MB` of space, `NVIDIA`/`AMD` need `~5-10GB`.

@@ -21,9 +21,10 @@ chmod +x $SCRIPT
 cd ..
 
 python_version_ok=""
+python_target_version="3.14.3"
 if [ -x "./python/bin/python3" ]; then
-    python_version_ok=$(./python/bin/python3 -c 'import sys; print(f"{sys.version_info[0]}.{sys.version_info[1]}")' 2>/dev/null || true)
-    if [ "$python_version_ok" != "3.14" ]; then
+    python_version_ok=$(./python/bin/python3 -c 'import sys; print(f"{sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}")' 2>/dev/null || true)
+    if [ "$python_version_ok" != "$python_target_version" ]; then
         rm -rf ./python
     fi
 fi
