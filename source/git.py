@@ -2,7 +2,7 @@ import os
 import time
 import pygit2
 
-QDIFF_URL = "https://github.com/arenasys/qDiffusion"
+QDIFF_URL = "https://github.com/stromtroopertk421/qDiffusion_Updateproject"
 INFER_URL = "https://github.com/stromtroopertk421/sd-inference-server"
 TRAIN_URL = "https://github.com/arenasys/sd-scripts"
 
