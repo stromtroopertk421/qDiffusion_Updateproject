@@ -12,10 +12,13 @@ import os
 import glob
 import shutil
 import importlib
-import pkg_resources
 import json
 import hashlib
 import argparse
+from importlib import metadata
+
+from packaging.requirements import Requirement
+from packaging.version import InvalidVersion, Version
 
 import platform
 IS_WIN = platform.system() == 'Windows'
@@ -122,20 +125,40 @@ class Builder(QThread):
         buildQMLRc()
         buildQMLPy()
 
+def _requirement_satisfied(requirement: Requirement, installed_version: str, enforce_version: bool) -> bool:
+    if not enforce_version or not str(requirement.specifier):
+        return True
+
+    try:
+        return requirement.specifier.contains(Version(installed_version), prereleases=True)
+    except InvalidVersion:
+        return False
+
+
 def check(dependancies, enforce_version=True):
-    importlib.reload(pkg_resources)
     needed = []
     for d in dependancies:
         try:
-            pkg_resources.require(d)
-        except pkg_resources.DistributionNotFound:
-            needed += [d]
-        except pkg_resources.VersionConflict as e:
-            if enforce_version:
-                #print("CONFLICT", d, e)
-                needed += [d]
+            requirement = Requirement(d)
         except Exception:
-            pass
+            needed += [d]
+            continue
+
+        if requirement.marker and not requirement.marker.evaluate():
+            continue
+
+        try:
+            installed_version = metadata.version(requirement.name)
+        except metadata.PackageNotFoundError:
+            needed += [d]
+            continue
+        except Exception:
+            needed += [d]
+            continue
+
+        if not _requirement_satisfied(requirement, installed_version, enforce_version):
+            needed += [d]
+
     return needed
 
 
@@ -323,18 +346,18 @@ class Coordinator(QObject):
         self.directml_version = ""
 
         try:
-            self.torch_version = str(pkg_resources.get_distribution("torch")).split()[-1]
-        except:
+            self.torch_version = metadata.version("torch")
+        except Exception:
             pass
 
         try:
-            self.torchvision_version = str(pkg_resources.get_distribution("torchvision")).split()[-1]
-        except:
+            self.torchvision_version = metadata.version("torchvision")
+        except Exception:
             pass
 
         try:
-            self.directml_version = str(pkg_resources.get_distribution("torch-directml")).split()[-1]
-        except:
+            self.directml_version = metadata.version("torch-directml")
+        except Exception:
             pass
 
         nvidia_cfg = TORCH_BUILD_MATRIX["nvidia"]
