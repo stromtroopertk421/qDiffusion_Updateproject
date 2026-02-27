@@ -12,17 +12,12 @@ IS_WIN = platform.system() == 'Windows'
 PYTHON_RUN = sys.executable
 
 PYTHON_TARGET_VERSION = "3.14.3"
-QT_VER = "PySide6==6.9.3"
 QT_PACKAGE = "PySide6"
-QT_TARGET_VERSION = QT_VER.split("==", 1)[1]
+QT_VER = "PySide6==6.10.2"
 
 
 def qt_version_matches_target():
     try:
-        from importlib import metadata
-        if metadata.version(QT_PACKAGE) != QT_TARGET_VERSION:
-            return False
-
         from PySide6.QtCore import Qt  # noqa: F401
         return True
     except Exception:
@@ -98,7 +93,7 @@ def venv_version_matches_target():
 
 def install_qt():
     print("INSTALLING PySide6...")
-    subprocess.run([get_venv_python(), "-m", "pip", "install", QT_VER], env=get_env(), check=True)
+    subprocess.run([get_venv_python(), "-m", "pip", "install", "--ignore-requires-python", "--force-reinstall", QT_VER], env=get_env(), check=True)
 
 def exceptHook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))

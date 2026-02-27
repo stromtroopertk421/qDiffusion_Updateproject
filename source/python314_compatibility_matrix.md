@@ -15,7 +15,7 @@
 | bson | `0.5.10` | pure-python | `0.5.10` | unchanged |
 | Send2Trash | `1.8.2` | pure-python | `1.8.3` | minor bump |
 | PyOpenGL | `3.1.7` | pure-python | `3.1.9` | minor bump |
-| PyQt5 | `5.15.7` | fragile for new interpreters | `PySide6==6.9.3` | migrated to active Qt line used by this codebase |
+| PyQt5 | `5.15.7` | fragile for new interpreters | `PySide6==6.10.2` | migrated to active Qt line used by this codebase |
 | cryptography | `40.0.2` | compiled wheel line too old | `44.0.1` | bump to current binary line |
 | numpy | `1.24.3` | compiled wheel line too old | `2.2.2` | bump to Python 3.14-capable line |
 | pygit2 | `1.12.1` | compiled wheel line too old | `1.17.0` | bump |
@@ -55,3 +55,10 @@ These constraints are kept explicit in `source/requirements_inference.txt` to av
 - qDiffusion installer resolves inference dependencies from `source/sd-inference-server` first (if present), before using `source/requirements_inference.txt` as fallback.
 - Fallback pins in `source/requirements_inference.txt` are kept aligned to the upgraded inference stack and should only be used when the sub-repo is unavailable.
 - This preserves compatibility with your fork-specific `sd-inference-server` requirements while keeping standalone installs deterministic.
+
+
+## Upstream references for PySide6 packaging
+
+- Qt for Python release notes: <https://doc.qt.io/qtforpython-6/release_notes/pyside6_release_notes.html>
+- PyPI project page (release files and Python compatibility tags): <https://pypi.org/project/PySide6/>
+- PyPI JSON API (for automation/check scripts): <https://pypi.org/pypi/PySide6/json>

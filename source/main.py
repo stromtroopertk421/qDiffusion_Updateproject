@@ -242,7 +242,9 @@ class Installer(QThread):
 
     def _build_install_args(self, package):
         args = ["pip", "install", "-U", package]
-        pkg = package.split("=", 1)[0]
+        pkg = package.split("=", 1)[0].strip().lower()
+        if pkg == "pyside6":
+            args[2:2] = ["--ignore-requires-python", "--force-reinstall"]
         if pkg in {"torch", "torchvision"} and "+" in package:
             build_channel = package.rsplit("+", 1)[-1]
             args += ["--index-url", "https://download.pytorch.org/whl/" + build_channel]
@@ -469,21 +471,13 @@ class Coordinator(QObject):
         if needed:
             needed = list(dict.fromkeys(needed))
 
-            # Legacy forks may still pin PyQt5 in downstream requirement files.
-            # qDiffusion's GUI is PySide6-based, so rewrite stale PyQt5 requests
-            # to the active runtime binding to avoid downloading obsolete wheels.
-            filtered = []
-            needs_qt = False
-            for package in needed:
-                if package.lower().startswith("pyqt5"):
-                    needs_qt = True
-                    continue
-                filtered.append(package)
-            if needs_qt:
-                pyside_pin = next((pkg for pkg in self.required if pkg.lower().startswith("pyside6")), "PySide6==6.9.3")
-                filtered.append(pyside_pin)
+            # PyQt5 is not supported in this codebase. Remove any stale PyQt5
+            # entries and enforce the project's PySide6 runtime pin.
+            needed = [package for package in needed if not package.lower().startswith("pyqt5")]
+            pyside_pin = next((pkg for pkg in self.required if pkg.lower().startswith("pyside6")), "PySide6==6.10.2")
+            if not any(pkg.lower().startswith("pyside6") for pkg in needed):
+                needed.append(pyside_pin)
 
-            needed = filtered
             needed = ["pip", "wheel"] + needed
 
         return needed
