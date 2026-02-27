@@ -47,7 +47,7 @@ then
         artifact_arch="x86_64_v3"
     fi
 
-    python_url="https://github.com/indygreg/python-build-standalone/releases/download/20260112/cpython-3.14.0+20260112-$artifact_arch-unknown-linux-gnu-install_only.tar.gz"
+    python_url="https://github.com/astral-sh/python-build-standalone/releases/download/20260211/cpython-3.14.3+20260211-$artifact_arch-unknown-linux-gnu-install_only.tar.gz"
 
     echo "DOWNLOADING PYTHON ($arch -> $artifact_arch)..."
     if ! curl -fL --progress-bar "$python_url" -o "python.tar.gz"; then

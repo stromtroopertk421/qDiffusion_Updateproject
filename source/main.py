@@ -480,7 +480,7 @@ class Coordinator(QObject):
                     continue
                 filtered.append(package)
             if needs_qt:
-                pyside_pin = next((pkg for pkg in self.required if pkg.lower().startswith("pyside6")), "PySide6==6.8.1")
+                pyside_pin = next((pkg for pkg in self.required if pkg.lower().startswith("pyside6")), "PySide6==6.9.3")
                 filtered.append(pyside_pin)
 
             needed = filtered
