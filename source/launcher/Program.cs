@@ -18,8 +18,8 @@ namespace qDiffusion
 {
     class Worker
     {
-        const string BundledPythonVersion = "3.14.0";
-        const string BundledPythonBuild = "20260112";
+        const string BundledPythonVersion = "3.14.3";
+        const string BundledPythonBuild = "20260211";
         const string BundledQtVersion = "6.8.1";
 
         [DllImport("shell32.dll", SetLastError = true)]
@@ -408,7 +408,7 @@ namespace qDiffusion
                 progress?.SetLabel("Downloading Python");
 
                 var python_file = $"python-{BundledPythonVersion}.tar.gz";
-                var python_url = $"https://github.com/indygreg/python-build-standalone/releases/download/{BundledPythonBuild}/cpython-{BundledPythonVersion}+{BundledPythonBuild}-x86_64-pc-windows-msvc-shared-install_only.tar.gz";
+                var python_url = $"https://github.com/astral-sh/python-build-standalone/releases/download/{BundledPythonBuild}/cpython-{BundledPythonVersion}+{BundledPythonBuild}-x86_64-pc-windows-msvc-install_only.tar.gz";
                 if(!Download(python_url, python_file))
                 {
                     progress?.DoClose();

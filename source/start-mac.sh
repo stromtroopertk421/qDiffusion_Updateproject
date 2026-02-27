@@ -10,7 +10,7 @@ fi
 
 if [ ! -d "./python" ]
 then
-    python_url="https://github.com/indygreg/python-build-standalone/releases/download/20260112/cpython-3.14.0+20260112-x86_64-apple-darwin-install_only.tar.gz"
+    python_url="https://github.com/astral-sh/python-build-standalone/releases/download/20260211/cpython-3.14.3+20260211-x86_64-apple-darwin-install_only.tar.gz"
 
     echo "DOWNLOADING PYTHON..."
     if ! curl -fL --progress-bar "$python_url" -o "python.tar.gz"; then
