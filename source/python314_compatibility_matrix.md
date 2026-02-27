@@ -15,7 +15,7 @@
 | bson | `0.5.10` | pure-python | `0.5.10` | unchanged |
 | Send2Trash | `1.8.2` | pure-python | `1.8.3` | minor bump |
 | PyOpenGL | `3.1.7` | pure-python | `3.1.9` | minor bump |
-| PyQt5 | `5.15.7` | fragile for new interpreters | `PySide6==6.8.1` | migrated to active Qt line used by this codebase |
+| PyQt5 | `5.15.7` | fragile for new interpreters | `PySide6==6.9.3` | migrated to active Qt line used by this codebase |
 | cryptography | `40.0.2` | compiled wheel line too old | `44.0.1` | bump to current binary line |
 | numpy | `1.24.3` | compiled wheel line too old | `2.2.2` | bump to Python 3.14-capable line |
 | pygit2 | `1.12.1` | compiled wheel line too old | `1.17.0` | bump |
