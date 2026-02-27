@@ -1,7 +1,16 @@
 @echo off
 
+set "PYTHON_VERSION_OK="
+
 IF NOT EXIST "python" (
     cd ..
+)
+
+IF EXIST "python\python.exe" (
+    for /f "delims=" %%V in ('python\python.exe -c "import sys; print(str(sys.version_info[0])+"."+str(sys.version_info[1]))" 2^>nul') do set "PYTHON_VERSION_OK=%%V"
+    if /I not "%PYTHON_VERSION_OK%"=="3.14" (
+        rmdir /S /Q "python"
+    )
 )
 
 IF NOT EXIST "python" (

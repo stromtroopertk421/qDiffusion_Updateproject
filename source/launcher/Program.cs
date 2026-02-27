@@ -318,6 +318,51 @@ namespace qDiffusion
 
             process.Start();
         }
+        public static bool PythonVersionMatches(string pythonExe, string majorMinor)
+        {
+            if (!File.Exists(pythonExe))
+            {
+                return false;
+            }
+
+            ProcessStartInfo startInfo = new ProcessStartInfo(pythonExe, "-c \"import sys; print(str(sys.version_info[0]) + '.' + str(sys.version_info[1]))\"")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (Process process = new Process { StartInfo = startInfo })
+            {
+                process.Start();
+                var output = process.StandardOutput.ReadToEnd().Trim();
+                process.WaitForExit();
+                return process.ExitCode == 0 && output == majorMinor;
+            }
+        }
+
+        public static bool VenvVersionMatches(string venvPath, string majorMinor)
+        {
+            var cfg = Path.Combine(venvPath, "pyvenv.cfg");
+            if (!File.Exists(cfg))
+            {
+                return false;
+            }
+
+            foreach (var line in File.ReadAllLines(cfg))
+            {
+                var lower = line.Trim().ToLowerInvariant();
+                if (lower.StartsWith("version") && lower.Contains("="))
+                {
+                    var version = lower.Split('=')[1].Trim();
+                    return version.StartsWith(majorMinor + ".");
+                }
+            }
+
+            return false;
+        }
+
         public void Work(string[] args)
         {
             var exe = Assembly.GetEntryAssembly().Location;
@@ -339,7 +384,10 @@ namespace qDiffusion
                 return;
             }
 
-            if (!Directory.Exists("python"))
+            var pythonExe = ".\\python\\python.exe";
+            var haveBundledPython = Directory.Exists("python") && PythonVersionMatches(pythonExe, "3.14");
+
+            if (!haveBundledPython)
             {
                 try
                 {
@@ -349,6 +397,11 @@ namespace qDiffusion
                 {
                     LaunchError("Write failed. Please extract the ZIP archive to a folder with write permissions.");
                     return;
+                }
+
+                if (Directory.Exists("python"))
+                {
+                    Directory.Delete("python", true);
                 }
 
                 LaunchProgress();
@@ -378,6 +431,11 @@ namespace qDiffusion
             }
 
             var python = ".\\python\\python.exe";
+
+            if (Directory.Exists("venv") && !VenvVersionMatches("venv", "3.14"))
+            {
+                Directory.Delete("venv", true);
+            }
 
             if (!Directory.Exists("venv"))
             {
