@@ -20,7 +20,7 @@ namespace qDiffusion
     {
         const string BundledPythonVersion = "3.14.3";
         const string BundledPythonBuild = "20260211";
-        const string BundledQtVersion = "6.9.3";
+        const string BundledQtSpecifier = "PySide6==6.10.2";
 
         [DllImport("shell32.dll", SetLastError = true)]
         static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string AppID);
@@ -495,23 +495,19 @@ namespace qDiffusion
             Environment.SetEnvironmentVariable("HSA_OVERRIDE_GFX_VERSION", "10.3.0");
             Environment.SetEnvironmentVariable("MIOPEN_LOG_LEVEL", "4");
 
-            var installedPySide6 = GetPackageVersion(pythonCli, "PySide6");
-            if (installedPySide6 != BundledQtVersion)
-            {
-                LaunchProgress();
-                progress?.SetLabel("Installing PySide6");
-                progress?.SetProgress(0);
+            LaunchProgress();
+            progress?.SetLabel("Installing PySide6");
+            progress?.SetProgress(0);
 
-                try
-                {
-                    Run(pythonCli, "-m", "pip", "install", $"PySide6=={BundledQtVersion}");
-                }
-                catch (Exception ex)
-                {
-                    LaunchError(ex.Message);
-                    progress?.DoClose();
-                    return;
-                }
+            try
+            {
+                Run(pythonCli, "-m", "pip", "install", "--ignore-requires-python", "--force-reinstall", BundledQtSpecifier);
+            }
+            catch (Exception ex)
+            {
+                LaunchError(ex.Message);
+                progress?.DoClose();
+                return;
             }
 
             progress?.DoClose();
