@@ -348,7 +348,7 @@ namespace qDiffusion
                 }
             }
 
-            var python = ".\\python\\pythonw.exe";
+            var python = ".\\python\\python.exe";
 
             if (!Directory.Exists("venv"))
             {
@@ -377,7 +377,8 @@ namespace qDiffusion
             // Register qdiffusion:// protocol handler
             RegisterProtocol(exe);
 
-            python = ".\\venv\\Scripts\\pythonw.exe";
+            var pythonCli = ".\\venv\\Scripts\\python.exe";
+            var pythonGui = ".\\venv\\Scripts\\pythonw.exe";
 
             // Set AMD variables
             Environment.SetEnvironmentVariable("HSA_OVERRIDE_GFX_VERSION", "10.3.0");
@@ -389,14 +390,23 @@ namespace qDiffusion
                 progress?.SetLabel("Installing PySide6");
                 progress?.SetProgress(0);
 
-                Run(python, "-m", "pip", "install", "PySide6==6.7.3");
+                try
+                {
+                    Run(pythonCli, "-m", "pip", "install", "PySide6==6.7.3");
+                }
+                catch (Exception ex)
+                {
+                    LaunchError(ex.Message);
+                    progress?.DoClose();
+                    return;
+                }
             }
 
             progress?.DoClose();
 
             try
             {
-                string[] cmd = { python, "source\\main.py" };
+                string[] cmd = { pythonGui, "source\\main.py" };
                 Launch(cmd.Concat(args).ToArray());
             }
             catch (Exception ex)
