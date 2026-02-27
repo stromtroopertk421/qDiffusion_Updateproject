@@ -201,8 +201,10 @@ TORCH_BUILD_MATRIX = {
             "index": "rocm6.4",
         },
         "windows": {
-            # No Python 3.14 torch-directml build is currently available.
-            "torch-directml": None,
+            "torch-directml": {
+                "3.8": "0.2.0.dev230426",
+                "3.10": "0.2.0.dev230426",
+            },
         },
     },
 }
@@ -346,7 +348,8 @@ class Coordinator(QObject):
         self.amd_torch_version = amd_cfg["linux"]["torch"]
         self.amd_torchvision_version = amd_cfg["linux"]["torchvision"]
 
-        self.amd_torch_directml_version = amd_cfg["windows"]["torch-directml"]
+        py_tag = f"{sys.version_info.major}.{sys.version_info.minor}"
+        self.amd_torch_directml_version = amd_cfg["windows"]["torch-directml"].get(py_tag)
         
         self.required_need = check(self.required, self.enforce)
         self.optional_need = check(self.optional, self.enforce)
