@@ -65,7 +65,7 @@ def install_venv():
     subprocess.run([PYTHON_RUN, "-m", "venv", VENV_DIR])
 
 def install_qt():
-    print("INSTALLNG PyQt...")
+    print("INSTALLING PySide6...")
     subprocess.run([get_venv_python(), "-m", "pip", "install", QT_VER], env=get_env())
 
 def exceptHook(exc_type, exc_value, exc_tb):
