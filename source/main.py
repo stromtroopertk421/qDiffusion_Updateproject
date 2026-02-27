@@ -232,6 +232,7 @@ TORCH_BUILD_MATRIX = {
 
 class Installer(QThread):
     output = pyqtSignal(str)
+    updated = pyqtSignal()
     installing = pyqtSignal(str)
     installed = pyqtSignal(str)
     def __init__(self, parent, packages):
@@ -239,6 +240,8 @@ class Installer(QThread):
         self.packages = packages
         self.proc = None
         self.stopping = False
+        self.downloading = False
+        self.download_progress = 1.0
 
     def _build_install_args(self, package):
         args = ["pip", "install", "-U", package]
@@ -265,8 +268,16 @@ class Installer(QThread):
                 while line := self.proc.stdout.readline():
                     if line:
                         line = line.strip()
-                        output += line + "\n"
-                        self.output.emit(line)
+                        if line.startswith("Progress"):
+                            _, current, _, total = line.split(" ")
+                            if total:
+                                self.download_progress = float(current)/float(total)
+                                self.downloading = self.download_progress < 1.0
+
+                                self.updated.emit()
+                        else:
+                            output += line + "\n"
+                            self.output.emit(line)
                     if self.stopping:
                         return
             if self.stopping:
@@ -509,7 +520,8 @@ class Coordinator(QObject):
         self.installer = Installer(self, packages)
         self.installer.installed.connect(self.onInstalled)
         self.installer.installing.connect(self.onInstalling)
-        self.installer.output.connect(self.onOutput)
+        self.installer.output.connect(self.onOutput)    
+        self.installer.updated.connect(self.onInstallUpdate)
         self.installer.finished.connect(self.doneInstalling)
         self.app.aboutToQuit.connect(self.installer.stop)
         self.cancel.connect(self.installer.stop)
@@ -529,6 +541,16 @@ class Coordinator(QObject):
     @pyqtSlot(str)
     def onOutput(self, out):
         self.output.emit(out)
+
+    @pyqtProperty(float, notify=installedUpdated)
+    def progress(self):
+        if self.installer and self.installer.downloading:
+            return self.installer.download_progress
+        return -1.0
+
+    @pyqtSlot()
+    def onInstallUpdate(self):
+        self.installedUpdated.emit()
     
     @pyqtSlot()
     def doneInstalling(self):
