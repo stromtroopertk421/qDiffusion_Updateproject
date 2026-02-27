@@ -325,8 +325,8 @@ namespace qDiffusion
                 LaunchProgress();
                 progress?.SetLabel("Downloading Python");
 
-                var python_file = "python-3.10.11.tar.gz";
-                var python_url = "https://github.com/arenasys/binaries/releases/download/v1/cpython-3.10.11+20230507-x86_64-pc-windows-msvc-shared-install_only.tar.gz";
+                var python_file = "python-3.14.0.tar.gz";
+                var python_url = "https://github.com/indygreg/python-build-standalone/releases/download/20260112/cpython-3.14.0+20260112-x86_64-pc-windows-msvc-shared-install_only.tar.gz";
                 if(!Download(python_url, python_file))
                 {
                     progress?.DoClose();
@@ -392,7 +392,7 @@ namespace qDiffusion
 
                 try
                 {
-                    Run(pythonCli, "-m", "pip", "install", "PySide6==6.7.3");
+                    Run(pythonCli, "-m", "pip", "install", "PySide6==6.8.1");
                 }
                 catch (Exception ex)
                 {
@@ -406,7 +406,7 @@ namespace qDiffusion
 
             try
             {
-                string[] cmd = { pythonGui, "source\\main.py" };
+                string[] cmd = { ".\\python\\pythonw.exe", "source\\launch.py" };
                 Launch(cmd.Concat(args).ToArray());
             }
             catch (Exception ex)
