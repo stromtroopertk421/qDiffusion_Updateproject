@@ -1,6 +1,5 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-
 import gui 1.0
 
 ApplicationWindow {
@@ -15,7 +14,7 @@ ApplicationWindow {
     Image {
         opacity: 0.5
         id: spinner
-        source: "file:source/qml/icons/loading.svg"
+        source: "icons/loading.svg"
         width: 80
         height: 80
         sourceSize: Qt.size(width, height)

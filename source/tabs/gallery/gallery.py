@@ -4,9 +4,10 @@ import os
 import send2trash
 import glob
 
+from qml_compat import register_qml_singleton
+
 from PySide6.QtCore import Slot as pyqtSlot, Signal as pyqtSignal, Property as pyqtProperty, QObject, QThread, QUrl, QMimeData, Qt
 from PySide6.QtSql import QSqlQuery
-from PySide6.QtQml import qmlRegisterSingletonType
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QApplication
 import sql
@@ -191,7 +192,7 @@ class Gallery(QObject):
 
         self._cellSize = 200
 
-        qmlRegisterSingletonType(Gallery, "gui", 1, 0, "GALLERY", lambda qml_engine: self)
+        register_qml_singleton(Gallery, "gui", 1, 0, "GALLERY", self)
 
         self.populater = Populater(self.gui, self.name)
         self.populater.forceReload.connect(self.populaterForcedReload)
