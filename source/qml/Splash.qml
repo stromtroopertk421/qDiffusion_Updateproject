@@ -11,12 +11,47 @@ ApplicationWindow {
     title: "qDiffusion"
     flags: Qt.Window | Qt.WindowStaysOnTopHint
 
+    function createWindowComponent(url) {
+        var component = Qt.createComponent(url)
+        var finishCreate = function() {
+            if (component.status === Component.Error) {
+                console.error("ERROR", component.errorString())
+                return
+            }
+
+            if (component.status !== Component.Ready) {
+                return
+            }
+
+            var object = component.createObject(root, { window: root, spinner: null })
+            if (object === null) {
+                console.error("ERROR", "Failed to create object for", url, component.errorString())
+            }
+        }
+
+        if (component.status === Component.Loading) {
+            component.statusChanged.connect(finishCreate)
+            return
+        }
+
+        finishCreate()
+    }
+
     function handleShow() {
-        var component = Qt.createComponent("qrc:/Installer.qml")
-        if (component.status !== Component.Ready) {
-            console.log("ERROR", component.errorString())
-        } else {
-            component.incubateObject(root, { window: root, spinner: null })
+        createWindowComponent("qrc:/Installer.qml")
+    }
+
+    contentItem: Item {
+        Image {
+            opacity: 0.5
+            id: spinner
+            source: "icons/loading.svg"
+            width: 80
+            height: 80
+            sourceSize: Qt.size(width, height)
+            anchors.centerIn: parent
+            smooth: true
+            antialiasing: true
         }
     }
 
@@ -33,12 +68,7 @@ ApplicationWindow {
     }
 
     function handleProceed() {
-        var component = Qt.createComponent("qrc:/Main.qml")
-        if (component.status !== Component.Ready) {
-            console.log("ERROR", component.errorString())
-        } else {
-            component.incubateObject(root, { window: root, spinner: null })
-        }
+        createWindowComponent("qrc:/Main.qml")
     }
 
     Component.onCompleted: {
