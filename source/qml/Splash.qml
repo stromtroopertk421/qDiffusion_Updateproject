@@ -1,8 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import gui 1.0
+import QtQuick
+import QtQuick.Controls
 
-Window {
+ApplicationWindow {
     id: root
     visible: true
     width: 1100
@@ -10,6 +9,8 @@ Window {
     color: "#1a1a1a"
     title: "qDiffusion"
     flags: Qt.Window | Qt.WindowStaysOnTopHint
+
+    property Item spinner: null
 
     function createWindowComponent(url) {
         var component = Qt.createComponent(url)
@@ -23,7 +24,7 @@ Window {
                 return
             }
 
-            var object = component.createObject(root, { window: root, spinner: spinner })
+            var object = component.createObject(root, { window: root, spinner: root.spinner })
             if (object === null) {
                 console.error("ERROR", "Failed to create object for", url, component.errorString())
             }
@@ -41,12 +42,10 @@ Window {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    Item {
-        id: splashLayer
-        anchors.fill: parent
+    Component {
+        id: spinnerComponent
 
         Image {
-            id: spinner
             opacity: 0.5
             source: "icons/loading.svg"
             width: 80
@@ -64,6 +63,11 @@ Window {
 
     Component.onCompleted: {
         root.flags = Qt.Window
+        root.spinner = spinnerComponent.createObject(root.contentItem)
+        if (root.spinner === null) {
+            console.error("ERROR", "Failed to create splash spinner")
+        }
+
         root.requestActivate()
         if (typeof COORDINATOR !== "undefined" && COORDINATOR) {
             COORDINATOR.show.connect(root.handleShow)
