@@ -262,19 +262,58 @@ namespace qDiffusion
 
         private static string QuoteArgument(string argument)
         {
-            if (string.IsNullOrEmpty(argument))
+            if (argument == null)
             {
                 return "\"\"";
             }
 
-            bool needsQuotes = argument.Any(ch => char.IsWhiteSpace(ch) || ch == '"');
+            if (argument.Length == 0)
+            {
+                return "\"\"";
+            }
+
+            bool needsQuotes = argument.Any(char.IsWhiteSpace) || argument.Contains("\"");
             if (!needsQuotes)
             {
                 return argument;
             }
 
-            var escaped = argument.Replace("\\", "\\\\").Replace("\"", "\\\"");
-            return "\"" + escaped + "\"";
+            var builder = new StringBuilder();
+            builder.Append('"');
+
+            int backslashes = 0;
+            foreach (char c in argument)
+            {
+                if (c == '\\')
+                {
+                    backslashes++;
+                    continue;
+                }
+
+                if (c == '"')
+                {
+                    builder.Append('\\', backslashes * 2 + 1);
+                    builder.Append('"');
+                    backslashes = 0;
+                    continue;
+                }
+
+                if (backslashes > 0)
+                {
+                    builder.Append('\\', backslashes);
+                    backslashes = 0;
+                }
+
+                builder.Append(c);
+            }
+
+            if (backslashes > 0)
+            {
+                builder.Append('\\', backslashes * 2);
+            }
+
+            builder.Append('"');
+            return builder.ToString();
         }
 
         private static string BuildArguments(string[] args)
