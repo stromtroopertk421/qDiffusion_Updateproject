@@ -555,7 +555,6 @@ namespace qDiffusion
                 try
                 {
                     Run(null, python, "-m", "venv", "venv");
-                    createdVenv = true;
                 }
                 catch (Exception ex)
                 {
@@ -589,6 +588,27 @@ namespace qDiffusion
             Environment.SetEnvironmentVariable("HSA_OVERRIDE_GFX_VERSION", "10.3.0");
             Environment.SetEnvironmentVariable("MIOPEN_LOG_LEVEL", "4");
 
+            LaunchProgress();
+            progress?.SetLabel("Updating pip");
+            progress?.SetProgress(5);
+
+            try
+            {
+                int pipProgress = 5;
+                progress?.SetMarquee(true);
+                Run((line) =>
+                {
+                    pipProgress = Math.Min(95, pipProgress + 1);
+                    progress?.SetProgress(pipProgress);
+                }, pythonCli, "-m", "pip", "--isolated", "install", "-U", "pip");
+                progress?.SetMarquee(false);
+                progress?.SetProgress(100);
+            }
+            catch
+            {
+                progress?.SetMarquee(false);
+            }
+
             var pinnedQtVersion = BundledQtSpecifier;
             if (BundledQtSpecifier.Contains("=="))
             {
@@ -596,57 +616,29 @@ namespace qDiffusion
             }
 
             var installedQtVersion = GetPackageVersion(pythonCli, "PySide6");
-            bool needsQtInstall = installedQtVersion != pinnedQtVersion;
-
-            if (createdVenv || needsQtInstall)
+            if (installedQtVersion != pinnedQtVersion)
             {
-                LaunchProgress();
-                progress?.SetLabel("Updating pip");
+                progress?.SetLabel("Installing PySide6");
                 progress?.SetProgress(5);
 
                 try
                 {
-                    int pipProgress = 5;
+                    int installProgress = 5;
                     progress?.SetMarquee(true);
                     Run((line) =>
                     {
-                        pipProgress = Math.Min(95, pipProgress + 1);
-                        progress?.SetProgress(pipProgress);
-                    }, pythonCli, "-m", "pip", "--isolated", "install", "-U", "pip");
+                        installProgress = Math.Min(95, installProgress + 1);
+                        progress?.SetProgress(installProgress);
+                    }, pythonCli, "-m", "pip", "--isolated", "install", "--ignore-requires-python", "-U", BundledQtSpecifier);
                     progress?.SetMarquee(false);
                     progress?.SetProgress(100);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    progress?.SetMarquee(false);
+                    LaunchError(ex.Message);
+                    progress?.DoClose();
+                    return;
                 }
-
-                if (needsQtInstall)
-                {
-                    progress?.SetLabel("Installing PySide6");
-                    progress?.SetProgress(5);
-
-                    try
-                    {
-                        int installProgress = 5;
-                        progress?.SetMarquee(true);
-                        Run((line) =>
-                        {
-                            installProgress = Math.Min(95, installProgress + 1);
-                            progress?.SetProgress(installProgress);
-                        }, pythonCli, "-m", "pip", "--isolated", "install", "--ignore-requires-python", "-U", BundledQtSpecifier);
-                        progress?.SetMarquee(false);
-                        progress?.SetProgress(100);
-                    }
-                    catch (Exception ex)
-                    {
-                        LaunchError(ex.Message);
-                        progress?.DoClose();
-                        return;
-                    }
-                }
-
-                progress?.DoClose();
             }
 
             try
