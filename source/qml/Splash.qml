@@ -1,6 +1,5 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-
 import gui 1.0
 
 ApplicationWindow {
@@ -9,9 +8,16 @@ ApplicationWindow {
     width: 1100
     height: 600
     color: "#1a1a1a"
-    title: TRANSLATOR.instance.translate("qDiffusion", "Title");
+    title: (typeof TRANSLATOR !== "undefined" && TRANSLATOR && TRANSLATOR.instance) ? TRANSLATOR.instance.translate("qDiffusion", "Title") : "qDiffusion"
     flags: Qt.Window | Qt.WindowStaysOnTopHint
 
+    function handleShow() {
+        var component = Qt.createComponent("qrc:/Installer.qml")
+        if (component.status !== Component.Ready) {
+            console.log("ERROR", component.errorString())
+        } else {
+            component.incubateObject(root, { window: root, spinner: null })
+        }
     Image {
         opacity: 0.5
         id: spinner
@@ -24,41 +30,22 @@ ApplicationWindow {
         antialiasing: true
     }
 
-    RotationAnimator {
-        id: spinnerAnimator
-        loops: Animation.Infinite
-        target: spinner
-        from: 0
-        to: 360
-        duration: 1000
-        running: spinner.visible
+    function handleProceed() {
+        var component = Qt.createComponent("qrc:/Main.qml")
+        if (component.status !== Component.Ready) {
+            console.log("ERROR", component.errorString())
+        } else {
+            component.incubateObject(root, { window: root, spinner: null })
+        }
     }
 
     Component.onCompleted: {
         root.flags = Qt.Window
         root.requestActivate()
-        COORDINATOR.load()
-    }
-
-    Connections {
-        target: COORDINATOR
-        property var installer: null
-        function onShow() {
-            var component = Qt.createComponent("qrc:/Installer.qml")
-            if(component.status != Component.Ready) {
-                console.log("ERROR", component.errorString())
-            } else {
-                installer = component.incubateObject(root, { window: root, spinner: spinner })
-            }
-        }
-
-        function onProceed() {
-            var component = Qt.createComponent("qrc:/Main.qml")
-            if(component.status != Component.Ready) {
-                console.log("ERROR", component.errorString())
-            } else {
-                component.incubateObject(root, { window: root, spinner: spinner })
-            }
+        if (typeof COORDINATOR !== "undefined" && COORDINATOR) {
+            COORDINATOR.show.connect(root.handleShow)
+            COORDINATOR.proceed.connect(root.handleProceed)
+            COORDINATOR.load()
         }
     }
 }

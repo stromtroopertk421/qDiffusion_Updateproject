@@ -1,5 +1,5 @@
 from PySide6.QtCore import Property as pyqtProperty, Slot as pyqtSlot, Signal as pyqtSignal, QObject, QUrl
-from PySide6.QtQml import qmlRegisterSingletonType, qmlRegisterUncreatableType
+from PySide6.QtQml import qmlRegisterSingletonInstance, qmlRegisterUncreatableType
 
 import json
 import os
@@ -37,7 +37,7 @@ class Translator(QObject):
             pass
 
         qmlRegisterUncreatableType(TranslatorInstance, "gui", 1, 0, "TranslationInstance", "Not a QML type")
-        qmlRegisterSingletonType(Translator, "gui", 1, 0, "TRANSLATOR", lambda qml_engine: self)
+        qmlRegisterSingletonInstance(Translator, "gui", 1, 0, "TRANSLATOR", self)
 
     @pyqtSlot()
     def loadLanguages(self):

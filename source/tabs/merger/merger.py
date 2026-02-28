@@ -12,7 +12,7 @@ from tabs.basic.basic_output import BasicOutput
 import manager
 
 from PySide6.QtCore import Property as pyqtProperty, Signal as pyqtSignal, QObject, Slot as pyqtSlot, QUrl, QThread, QThreadPool
-from PySide6.QtQml import qmlRegisterSingletonType, qmlRegisterUncreatableType
+from PySide6.QtQml import qmlRegisterSingletonInstance, qmlRegisterUncreatableType
 from PySide6.QtSql import QSqlQuery
 from PySide6.QtGui import QImage
 
@@ -301,7 +301,7 @@ class Merger(QObject):
             "strength": 1.0
         })
 
-        qmlRegisterSingletonType(Merger, "gui", 1, 0, "MERGER", lambda qml_engine: self)
+        qmlRegisterSingletonInstance(Merger, "gui", 1, 0, "MERGER", self)
         qmlRegisterUncreatableType(MergeOperation, "gui", 1, 0, "MergeOperation", "Not a QML type")
 
         self._operations = []
