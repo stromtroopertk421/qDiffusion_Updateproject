@@ -97,14 +97,29 @@ FocusReleaser {
 
         function addTab() {
             var errorTab = Qt.createComponent("qrc:/Error.qml")
+            if(errorTab.status != Component.Ready) {
+                console.error("ERROR", "Failed to load error tab component", errorTab.errorString())
+                return
+            }
+
             for(var i = 0; i < GUI.tabSources.length; i++) {
                 var component = Qt.createComponent(GUI.tabSources[i])
                 if(component.status != Component.Ready) {
                     var errorString = component.errorString()
-                    console.log("ERROR", errorString)
-                    errorTab.createObject(stackLayout, {error: errorString})
+                    console.error("ERROR", errorString)
+                    var errorObject = errorTab.createObject(stackLayout, {error: errorString})
+                    if(errorObject == null) {
+                        console.error("ERROR", "Failed to instantiate fallback error tab", errorTab.errorString())
+                    }
                 } else {
-                    component.createObject(stackLayout)
+                    var tabObject = component.createObject(stackLayout)
+                    if(tabObject == null) {
+                        console.error("ERROR", "Failed to create tab object", GUI.tabSources[i], component.errorString())
+                        var fallback = errorTab.createObject(stackLayout, {error: component.errorString()})
+                        if(fallback == null) {
+                            console.error("ERROR", "Failed to instantiate fallback error tab", errorTab.errorString())
+                        }
+                    }
                 }
             }
         }

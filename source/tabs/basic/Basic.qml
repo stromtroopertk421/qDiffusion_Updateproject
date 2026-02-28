@@ -545,9 +545,12 @@ Item {
             function onOpeningSettings(detailer) {
                 var component = Qt.createComponent("qrc:/components/DetailerDialog.qml")
                 if(component.status != Component.Ready) {
-                    console.log("ERROR", component.errorString())
+                    console.error("ERROR", component.errorString())
                 } else {
-                    component.incubateObject(dialogContainer, { detailer: detailer })
+                    var dialog = component.createObject(dialogContainer, { detailer: detailer })
+                    if(dialog == null) {
+                        console.error("ERROR", "Failed to create detailer dialog", component.errorString())
+                    }
                 }
             }
         }
