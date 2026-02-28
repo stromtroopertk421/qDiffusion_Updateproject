@@ -530,7 +530,9 @@ namespace qDiffusion
             foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
             {
                 var key = (string)de.Key;
-                if (key.StartsWith("QT") || key.StartsWith("PIP") || key.StartsWith("PYTHON"))
+                if (key.StartsWith("QT", StringComparison.OrdinalIgnoreCase) ||
+                    key.StartsWith("PIP", StringComparison.OrdinalIgnoreCase) ||
+                    key.StartsWith("PYTHON", StringComparison.OrdinalIgnoreCase))
                 {
                     Environment.SetEnvironmentVariable(key, null);
                 }
@@ -565,13 +567,20 @@ namespace qDiffusion
             var path = Environment.GetEnvironmentVariable("PATH");
             Environment.SetEnvironmentVariable("PATH", Path.Combine(exe_dir, "venv", "Scripts") + ";" + path);
             Environment.SetEnvironmentVariable("VIRTUAL_ENV", Path.Combine(exe_dir, "venv"));
+            Environment.SetEnvironmentVariable("PYTHONNOUSERSITE", "1");
             Environment.SetEnvironmentVariable("PIP_CONFIG_FILE", "nul");
+            Environment.SetEnvironmentVariable("PIP_DISABLE_PIP_VERSION_CHECK", "1");
 
             // Register qdiffusion:// protocol handler
             RegisterProtocol(exe);
 
             var pythonCli = ".\\venv\\Scripts\\python.exe";
             var pythonGui = ".\\venv\\Scripts\\pythonw.exe";
+            if (!File.Exists(pythonCli))
+            {
+                LaunchError("Missing venv Python executable: " + pythonCli);
+                return;
+            }
             var launchPython = File.Exists(pythonGui) ? pythonGui : pythonCli;
 
             // Set AMD variables
@@ -590,7 +599,7 @@ namespace qDiffusion
                 {
                     pipProgress = Math.Min(95, pipProgress + 1);
                     progress?.SetProgress(pipProgress);
-                }, pythonCli, "-m", "pip", "install", "-U", "pip");
+                }, pythonCli, "-m", "pip", "--isolated", "install", "-U", "pip");
                 progress?.SetMarquee(false);
                 progress?.SetProgress(100);
             }
@@ -619,7 +628,7 @@ namespace qDiffusion
                     {
                         installProgress = Math.Min(95, installProgress + 1);
                         progress?.SetProgress(installProgress);
-                    }, pythonCli, "-m", "pip", "install", "--ignore-requires-python", "-U", BundledQtSpecifier);
+                    }, pythonCli, "-m", "pip", "--isolated", "install", "--ignore-requires-python", "-U", BundledQtSpecifier);
                     progress?.SetMarquee(false);
                     progress?.SetProgress(100);
                 }
