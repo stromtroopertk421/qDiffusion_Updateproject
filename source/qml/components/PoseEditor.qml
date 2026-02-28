@@ -515,7 +515,7 @@ Item {
             Repeater {
                 model: poses
                 Item {
-                    id: entry
+                    id: edgeEntry
                     anchors.fill: parent
                     property var pose: modelData
                     property var nodes: pose.nodes
@@ -587,7 +587,7 @@ Item {
                 Repeater {
                     model: poses
                     Item {
-                        id: entry
+                        id: nodeEntry
                         anchors.fill: parent
                         property var pose: modelData
 

@@ -57,7 +57,7 @@ Rectangle {
                     border.color: COMMON.accent(0.2)
 
                     SToolTip {
-                        visible: mouseArea.containsMouse
+                        visible: downloadMouseArea.containsMouse
                         delay: 100
                         text: modelData.label
                     }
@@ -77,7 +77,7 @@ Rectangle {
                     }
                     
                     MouseArea {
-                        id: mouseArea
+                        id: downloadMouseArea
                         hoverEnabled: true
                         anchors.fill: parent
                         onPressed: {
@@ -120,7 +120,7 @@ Rectangle {
             }
 
             MouseArea {
-                id: mouseArea
+                id: statusMouseArea
                 anchors.fill: parent
                 hoverEnabled: true
             }
@@ -128,7 +128,7 @@ Rectangle {
             SText {
                 id: latencyLabel
                 property var latency: Math.floor(GUI.remoteLatency*1000)
-                visible: (latencyLabel.latency >= 10000 || mouseArea.containsMouse) && GUI.remoteLatency != 0 && GUI.isRemote
+                visible: (latencyLabel.latency >= 10000 || statusMouseArea.containsMouse) && GUI.remoteLatency != 0 && GUI.isRemote
                 anchors.fill: parent
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
