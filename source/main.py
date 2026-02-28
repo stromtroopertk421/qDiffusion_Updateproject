@@ -610,10 +610,15 @@ def launch(url):
     translator = Translator(app)
     coordinator = Coordinator(app, engine)
 
-    engine.load(QUrl('file:source/qml/Splash.qml'))
+    splash_qml = QUrl.fromLocalFile(project_path("source", "qml", "Splash.qml"))
+    engine.load(splash_qml)
+
+    root_objects = engine.rootObjects()
+    if not root_objects:
+        raise RuntimeError(f"Failed to load QML root object: {splash_qml.toString()}")
 
     if IS_WIN:
-        hwnd = engine.rootObjects()[0].winId()
+        hwnd = root_objects[0].winId()
         misc.setWindowProperties(hwnd, APPID, NAME, LAUNCHER)
 
     os._exit(app.exec())
