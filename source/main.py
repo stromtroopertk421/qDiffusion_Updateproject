@@ -570,7 +570,12 @@ class Coordinator(QObject):
             if factor == 75:
                 return 1.25
         return 1.0
-    
+
+
+def _on_qml_warnings(warnings):
+    for w in warnings:
+        print(f"QML WARNING: {w.toString()}", file=sys.stderr, flush=True)
+
 def launch(url):
     import misc
 
@@ -606,9 +611,11 @@ def launch(url):
     
     engine = QQmlApplicationEngine()
     engine.quit.connect(app.quit)
+    engine.warnings.connect(_on_qml_warnings)
     
     translator = Translator(app)
     coordinator = Coordinator(app, engine)
+    misc.registerTypes()
 
     splash_qml = QUrl.fromLocalFile(project_path("source", "qml", "Splash.qml"))
     engine.load(splash_qml)
@@ -625,9 +632,7 @@ def launch(url):
 
 def ready():
     import qml.qml_rc
-    import misc
     qmlRegisterSingletonType(QUrl("qrc:/Common.qml"), "gui", 1, 0, "COMMON")
-    misc.registerTypes()
 
 def start(engine, app):
     import gui
