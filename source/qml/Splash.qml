@@ -41,7 +41,9 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    contentItem: Item {
+    background: Rectangle {
+        color: root.color
+
         Image {
             opacity: 0.5
             id: spinner
