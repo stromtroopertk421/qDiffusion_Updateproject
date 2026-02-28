@@ -88,7 +88,7 @@ def buildQMLPy():
 
     status = subprocess.run(["pyside6-rcc", "-o", qml_py, qml_rc], capture_output=True, startupinfo=startupinfo)
     if status.returncode != 0:
-        raise Exception(status.stderr)
+        raise Exception(status.stderr.decode("utf-8", errors="replace"))
 
     shutil.rmtree(os.path.join(qml_path, "tabs"))
     os.remove(qml_rc)
@@ -562,11 +562,11 @@ class Coordinator(QObject):
     @pyqtProperty(float, constant=True)
     def scale(self):
         if IS_WIN:
-            factor = round(self.parent().desktop().logicalDpiX()*(100/96))
+            factor = round(QApplication.primaryScreen().logicalDotsPerInchX()*(100/96))
             if factor == 125:
                 return 0.82
         if IS_MAC:
-            factor = round(self.parent().desktop().logicalDpiX()*(100/96))
+            factor = round(QApplication.primaryScreen().logicalDotsPerInchX()*(100/96))
             if factor == 75:
                 return 1.25
         return 1.0
@@ -584,8 +584,6 @@ def launch(url):
         misc.setAppID(APPID)
     
     QCoreApplication.setAttribute(Qt.AA_UseDesktopOpenGL, True)
-    QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-    QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
     scaling = False
     try:
