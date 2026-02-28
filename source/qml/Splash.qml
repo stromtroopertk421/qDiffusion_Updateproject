@@ -41,7 +41,9 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    contentItem: Item {
+    Item {
+        anchors.fill: parent
+
         Image {
             opacity: 0.5
             id: spinner
