@@ -123,6 +123,7 @@ def exceptHook(exc_type, exc_value, exc_tb):
         input("PRESS ENTER TO CLOSE")
 
 if __name__ == "__main__":
+    ensure_project_cwd()
     sys.excepthook = exceptHook
     log(f"LAUNCH START cwd={os.getcwd()} project={PROJECT_DIR} python={PYTHON_RUN}")
 

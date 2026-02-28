@@ -17,11 +17,12 @@ from PySide6.QtCore import Slot as pyqtSlot, Signal as pyqtSignal, QThread
 from PySide6.QtWidgets import QApplication
 
 import git
+from paths import CRASH_LOG_PATH, source_path
 
 def log_traceback(label):
     exc_type, exc_value, exc_tb = sys.exc_info()
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    with open("crash.log", "a", encoding='utf-8') as f:
+    with open(CRASH_LOG_PATH, "a", encoding='utf-8') as f:
         f.write(f"{label} {datetime.datetime.now()}\n{tb}\n")
     print(label, tb)
     return tb
@@ -36,7 +37,7 @@ class InferenceProcessThread(threading.Thread):
         self.current = None
         self.cancelled = set()
 
-        infer_path = os.path.join("source", "sd-inference-server")
+        infer_path = source_path("sd-inference-server")
 
         if not os.path.exists(infer_path):
             self.responses.put({"type":"status", "data":{"message":"Downloading"}})

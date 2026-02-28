@@ -21,13 +21,15 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.exceptions import InvalidTag
 
+from paths import CRASH_LOG_PATH
+
 DEFAULT_PASSWORD = "qDiffusion"
 FRAGMENT_SIZE = 524288
 
 def log_traceback(label):
     exc_type, exc_value, exc_tb = sys.exc_info()
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    with open("crash.log", "a", encoding='utf-8') as f:
+    with open(CRASH_LOG_PATH, "a", encoding='utf-8') as f:
         f.write(f"{label} {datetime.datetime.now()}\n{tb}\n")
     print(label, tb)
     return tb

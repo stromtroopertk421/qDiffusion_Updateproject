@@ -30,9 +30,10 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 
 from translation import Translator
+from paths import CRASH_LOG_PATH, ensure_project_cwd, project_path
 
 NAME = "qDiffusion"
-LAUNCHER = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "qDiffusion.exe")
+LAUNCHER = project_path("qDiffusion.exe")
 APPID = "arenasys.qdiffusion." + hashlib.md5(LAUNCHER.encode("utf-8")).hexdigest()
 ERRORED = False
 
@@ -651,14 +652,14 @@ def start(engine, app):
 def exceptHook(exc_type, exc_value, exc_tb):
     global ERRORED
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    with open("crash.log", "a", encoding='utf-8') as f:
+    with open(CRASH_LOG_PATH, "a", encoding='utf-8') as f:
         f.write(f"GUI {datetime.datetime.now()}\n{tb}\n")
     print(tb)
-    print("TRACEBACK SAVED: crash.log")
+    print(f"TRACEBACK SAVED: {CRASH_LOG_PATH}")
 
     if IS_WIN and os.path.exists(LAUNCHER) and not ERRORED:
         ERRORED = True
-        message = f"{tb}\nError saved to crash.log"
+        message = f"{tb}\nError saved to {CRASH_LOG_PATH}"
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         subprocess.run([LAUNCHER, "-e", message], startupinfo=startupinfo)
@@ -666,8 +667,7 @@ def exceptHook(exc_type, exc_value, exc_tb):
     QApplication.exit(-1)
 
 def main():
-    if not os.path.exists("source"):
-        os.chdir('..')
+    ensure_project_cwd()
 
     sys.excepthook = exceptHook
 
