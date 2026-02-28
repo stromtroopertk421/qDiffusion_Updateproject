@@ -1,6 +1,5 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import gui 1.0
+import QtQuick
+import QtQuick.Controls
 
 ApplicationWindow {
     id: root
@@ -10,6 +9,8 @@ ApplicationWindow {
     color: "#1a1a1a"
     title: "qDiffusion"
     flags: Qt.Window | Qt.WindowStaysOnTopHint
+
+    property var spinner: null
 
     function createWindowComponent(url) {
         var component = Qt.createComponent(url)
@@ -23,7 +24,7 @@ ApplicationWindow {
                 return
             }
 
-            var object = component.createObject(root, { window: root, spinner: null })
+            var object = component.createObject(root, { window: root, spinner: root.spinner })
             if (object === null) {
                 console.error("ERROR", "Failed to create object for", url, component.errorString())
             }
@@ -41,24 +42,36 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    Image {
-        id: spinner
-        opacity: 0.5
-        source: "icons/loading.svg"
-        width: 80
-        height: 80
-        sourceSize: Qt.size(width, height)
-        anchors.centerIn: parent
-        smooth: true
-        antialiasing: true
-    }
-
     function handleProceed() {
         createWindowComponent("qrc:/Main.qml")
     }
 
+    function createSpinner() {
+        var spinnerQml = 'import QtQuick\nImage {\n' +
+            '    opacity: 0.5\n' +
+            '    source: "icons/loading.svg"\n' +
+            '    width: 80\n' +
+            '    height: 80\n' +
+            '    sourceSize: Qt.size(width, height)\n' +
+            '    anchors.centerIn: parent\n' +
+            '    smooth: true\n' +
+            '    antialiasing: true\n' +
+            '}'
+
+        root.spinner = Qt.createQmlObject(spinnerQml, root.contentItem, "SplashSpinner")
+        if (root.spinner === null) {
+            console.error("ERROR", "Failed to create splash spinner")
+        }
+    }
+
     Component.onCompleted: {
         root.flags = Qt.Window
+        try {
+            createSpinner()
+        } catch (error) {
+            console.error("ERROR", "Splash spinner creation failed", error)
+        }
+
         root.requestActivate()
         if (typeof COORDINATOR !== "undefined" && COORDINATOR) {
             COORDINATOR.show.connect(root.handleShow)
