@@ -31,6 +31,7 @@ from PySide6.QtGui import QIcon
 
 from translation import Translator
 from paths import CRASH_LOG_PATH, ensure_project_cwd, project_path
+from qml_compat import register_qml_singleton
 
 NAME = "qDiffusion"
 LAUNCHER = project_path("qDiffusion.exe")
@@ -618,6 +619,12 @@ def launch(url):
     
     translator = Translator(app)
     coordinator = Coordinator(app, engine)
+    misc.registerTypes()
+
+    context = engine.rootContext()
+    context.setContextProperty("TRANSLATOR", translator)
+    context.setContextProperty("COORDINATOR", coordinator)
+
     misc.registerTypes()
 
     context = engine.rootContext()

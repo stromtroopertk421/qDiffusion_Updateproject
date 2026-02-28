@@ -1,3 +1,4 @@
+from qml_compat import register_qml_singleton
 from PySide6.QtCore import Property as pyqtProperty, Slot as pyqtSlot, Signal as pyqtSignal, QObject, QSize, QUrl, QMimeData, QByteArray
 from PySide6.QtQml import qmlRegisterSingletonInstance, qmlRegisterUncreatableType
 from PySide6.QtGui import QImage, QDrag, QCursor

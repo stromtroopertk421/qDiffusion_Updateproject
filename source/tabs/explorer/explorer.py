@@ -8,6 +8,8 @@ import os
 import PIL.Image
 import misc
 import glob
+
+from qml_compat import register_qml_singleton
 import shutil
 import time
 import json

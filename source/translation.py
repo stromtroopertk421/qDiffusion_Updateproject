@@ -5,6 +5,8 @@ import json
 import os
 import glob
 
+from qml_compat import register_qml_singleton
+
 class TranslatorInstance(QObject):
     def __init__(self, parent):
         super().__init__(parent)

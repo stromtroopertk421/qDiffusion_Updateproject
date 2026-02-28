@@ -4,6 +4,8 @@ import os
 import send2trash
 import glob
 
+from qml_compat import register_qml_singleton
+
 from PySide6.QtCore import Slot as pyqtSlot, Signal as pyqtSignal, Property as pyqtProperty, QObject, QThread, QUrl, QMimeData, Qt
 from PySide6.QtSql import QSqlQuery
 from PySide6.QtQml import qmlRegisterSingletonInstance

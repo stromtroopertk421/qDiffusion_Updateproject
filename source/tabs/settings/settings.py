@@ -1,3 +1,4 @@
+from qml_compat import register_qml_singleton
 import math
 import os
 import platform

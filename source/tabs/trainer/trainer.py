@@ -1,5 +1,7 @@
 import os
 import glob
+
+from qml_compat import register_qml_singleton
 import PIL.Image
 import math
 import json
