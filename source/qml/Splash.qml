@@ -1,8 +1,8 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Window 2.15
 import gui 1.0
 
-ApplicationWindow {
+Window {
     id: root
     visible: true
     width: 1100
@@ -23,7 +23,7 @@ ApplicationWindow {
                 return
             }
 
-            var object = component.createObject(root, { window: root, spinner: null })
+            var object = component.createObject(root, { window: root, spinner: spinner })
             if (object === null) {
                 console.error("ERROR", "Failed to create object for", url, component.errorString())
             }
@@ -41,16 +41,21 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    Image {
-        id: spinner
-        opacity: 0.5
-        source: "icons/loading.svg"
-        width: 80
-        height: 80
-        sourceSize: Qt.size(width, height)
-        anchors.centerIn: parent
-        smooth: true
-        antialiasing: true
+    Item {
+        id: splashLayer
+        anchors.fill: parent
+
+        Image {
+            id: spinner
+            opacity: 0.5
+            source: "icons/loading.svg"
+            width: 80
+            height: 80
+            sourceSize: Qt.size(width, height)
+            anchors.centerIn: parent
+            smooth: true
+            antialiasing: true
+        }
     }
 
     function handleProceed() {
