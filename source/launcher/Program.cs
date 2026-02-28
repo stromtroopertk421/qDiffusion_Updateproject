@@ -545,6 +545,7 @@ namespace qDiffusion
                 Directory.Delete("venv", true);
             }
 
+            bool createdVenv = false;
             if (!Directory.Exists("venv"))
             {
                 LaunchProgress();
@@ -639,8 +640,6 @@ namespace qDiffusion
                     return;
                 }
             }
-
-            progress?.DoClose();
 
             try
             {
