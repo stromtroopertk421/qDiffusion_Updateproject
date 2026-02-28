@@ -25,7 +25,7 @@ IS_WIN = platform.system() == 'Windows'
 IS_MAC = platform.system() == 'Darwin'
 
 from PySide6.QtCore import Signal as pyqtSignal, Slot as pyqtSlot, Property as pyqtProperty, QObject, QUrl, QCoreApplication, Qt, QElapsedTimer, QThread
-from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterSingletonType, qmlRegisterType
+from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterSingletonInstance, qmlRegisterSingletonType, qmlRegisterType
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 
@@ -341,7 +341,7 @@ class Coordinator(QObject):
 
         self.find_needed()
 
-        register_qml_singleton(Coordinator, "gui", 1, 0, "COORDINATOR", self)
+        qmlRegisterSingletonInstance(Coordinator, "gui", 1, 0, "COORDINATOR", self)
 
     def find_needed(self):
         self.install_blocker = ""
@@ -619,6 +619,13 @@ def launch(url):
     
     translator = Translator(app)
     coordinator = Coordinator(app, engine)
+    misc.registerTypes()
+
+    context = engine.rootContext()
+    context.setContextProperty("TRANSLATOR", translator)
+    context.setContextProperty("COORDINATOR", coordinator)
+
+    misc.registerTypes()
 
     context = engine.rootContext()
     context.setContextProperty("TRANSLATOR", translator)
@@ -664,7 +671,7 @@ def start(engine, app):
     engine.addImageProvider("async", backend.thumbnails.async_provider)
     engine.addImageProvider("big", backend.thumbnails.big_provider)
 
-    register_qml_singleton(gui.GUI, "gui", 1, 0, "GUI", backend)
+    qmlRegisterSingletonInstance(gui.GUI, "gui", 1, 0, "GUI", backend)
     
     loadTabs(backend, backend)
 

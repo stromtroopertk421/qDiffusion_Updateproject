@@ -1,4 +1,5 @@
 from PySide6.QtCore import Qt, Property as pyqtProperty, Signal as pyqtSignal, QObject, Slot as pyqtSlot, QUrl, QThread, QMimeData, QByteArray
+from PySide6.QtQml import qmlRegisterSingletonInstance
 from PySide6.QtSql import QSqlQuery
 from PySide6.QtGui import QImage, QDesktopServices, QDrag
 
@@ -278,7 +279,7 @@ class Explorer(QObject):
         self._metadata = {}
         self._inspector = misc.InspectorManager(self)
 
-        register_qml_singleton(Explorer, "gui", 1, 0, "EXPLORER", self)
+        qmlRegisterSingletonInstance(Explorer, "gui", 1, 0, "EXPLORER", self)
 
         self.gui.optionsUpdated.connect(self.optionsUpdated)
         self.gui.favUpdated.connect(self.favouritesUpdated)
