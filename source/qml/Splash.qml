@@ -41,8 +41,8 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    background: Rectangle {
-        color: root.color
+    Item {
+        anchors.fill: parent
 
         Image {
             opacity: 0.5
