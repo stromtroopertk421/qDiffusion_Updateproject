@@ -1,6 +1,5 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import gui 1.0
+import QtQuick
+import QtQuick.Controls
 
 ApplicationWindow {
     id: root
@@ -10,6 +9,8 @@ ApplicationWindow {
     color: "#1a1a1a"
     title: "qDiffusion"
     flags: Qt.Window | Qt.WindowStaysOnTopHint
+
+    property Item spinner: null
 
     function createWindowComponent(url) {
         var component = Qt.createComponent(url)
@@ -23,7 +24,7 @@ ApplicationWindow {
                 return
             }
 
-            var object = component.createObject(root, { window: root, spinner: null })
+            var object = component.createObject(root, { window: root, spinner: root.spinner })
             if (object === null) {
                 console.error("ERROR", "Failed to create object for", url, component.errorString())
             }
@@ -41,16 +42,19 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    Image {
-        id: spinner
-        opacity: 0.5
-        source: "icons/loading.svg"
-        width: 80
-        height: 80
-        sourceSize: Qt.size(width, height)
-        anchors.centerIn: parent
-        smooth: true
-        antialiasing: true
+    Component {
+        id: spinnerComponent
+
+        Image {
+            opacity: 0.5
+            source: "icons/loading.svg"
+            width: 80
+            height: 80
+            sourceSize: Qt.size(width, height)
+            anchors.centerIn: parent
+            smooth: true
+            antialiasing: true
+        }
     }
 
     function handleProceed() {
@@ -59,6 +63,11 @@ ApplicationWindow {
 
     Component.onCompleted: {
         root.flags = Qt.Window
+        root.spinner = spinnerComponent.createObject(root.contentItem)
+        if (root.spinner === null) {
+            console.error("ERROR", "Failed to create splash spinner")
+        }
+
         root.requestActivate()
         if (typeof COORDINATOR !== "undefined" && COORDINATOR) {
             COORDINATOR.show.connect(root.handleShow)
