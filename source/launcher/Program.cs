@@ -259,7 +259,7 @@ namespace qDiffusion
             }
         }
 
-        public static void Run(params string[] args)
+        public static void Run(Action<string> onOutput = null, params string[] args)
         {
             string command = args[0];
             string arguments = string.Join(" ", args, 1, args.Length - 1);
@@ -272,29 +272,49 @@ namespace qDiffusion
                 CreateNoWindow = true
             };
 
-            Process process = new Process
+            using (Process process = new Process())
             {
-                StartInfo = startInfo
-            };
+                process.StartInfo = startInfo;
+                var output = new StringBuilder();
+                object outputLock = new object();
 
-            try
-            {
-                process.Start();
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
+                DataReceivedEventHandler onData = (sender, e) =>
                 {
-                    string errorOutput = process.StandardError.ReadToEnd();
-                    if (string.IsNullOrEmpty(errorOutput))
+                    if (string.IsNullOrWhiteSpace(e.Data))
                     {
-                        errorOutput = process.StandardOutput.ReadToEnd();
+                        return;
                     }
-                    throw new Exception(errorOutput);
+                    lock (outputLock)
+                    {
+                        output.AppendLine(e.Data);
+                    }
+                    onOutput?.Invoke(e.Data);
+                };
+
+                process.OutputDataReceived += onData;
+                process.ErrorDataReceived += onData;
+
+                try
+                {
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    process.WaitForExit();
+
+                    if (process.ExitCode != 0)
+                    {
+                        string errorOutput;
+                        lock (outputLock)
+                        {
+                            errorOutput = output.ToString();
+                        }
+                        throw new Exception(string.IsNullOrEmpty(errorOutput) ? "Process failed." : errorOutput.Trim());
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
             }
         }
 
@@ -469,7 +489,7 @@ namespace qDiffusion
 
                 try
                 {
-                    Run(python, "-m", "venv", "venv");
+                    Run(null, python, "-m", "venv", "venv");
                 }
                 catch (Exception ex)
                 {
@@ -490,31 +510,80 @@ namespace qDiffusion
 
             var pythonCli = ".\\venv\\Scripts\\python.exe";
             var pythonGui = ".\\venv\\Scripts\\pythonw.exe";
+            var launchPython = File.Exists(pythonGui) ? pythonGui : pythonCli;
 
             // Set AMD variables
             Environment.SetEnvironmentVariable("HSA_OVERRIDE_GFX_VERSION", "10.3.0");
             Environment.SetEnvironmentVariable("MIOPEN_LOG_LEVEL", "4");
 
             LaunchProgress();
-            progress?.SetLabel("Installing PySide6");
-            progress?.SetProgress(0);
+            progress?.SetLabel("Updating pip");
+            progress?.SetProgress(5);
 
             try
             {
-                Run(pythonCli, "-m", "pip", "install", "--ignore-requires-python", "--force-reinstall", BundledQtSpecifier);
+                int pipProgress = 5;
+                progress?.SetMarquee(true);
+                Run((line) =>
+                {
+                    pipProgress = Math.Min(95, pipProgress + 1);
+                    progress?.SetProgress(pipProgress);
+                }, pythonCli, "-m", "pip", "install", "-U", "pip");
+                progress?.SetMarquee(false);
+                progress?.SetProgress(100);
             }
-            catch (Exception ex)
+            catch
             {
-                LaunchError(ex.Message);
-                progress?.DoClose();
-                return;
+                progress?.SetMarquee(false);
+            }
+
+            var pinnedQtVersion = BundledQtSpecifier;
+            if (BundledQtSpecifier.Contains("=="))
+            {
+                pinnedQtVersion = BundledQtSpecifier.Split(new[] { "==" }, StringSplitOptions.None)[1].Trim();
+            }
+
+            var installedQtVersion = GetPackageVersion(pythonCli, "PySide6");
+            if (installedQtVersion != pinnedQtVersion)
+            {
+                progress?.SetLabel("Installing PySide6");
+                progress?.SetProgress(5);
+
+                try
+                {
+                    int installProgress = 5;
+                    progress?.SetMarquee(true);
+                    Run((line) =>
+                    {
+                        installProgress = Math.Min(95, installProgress + 1);
+                        progress?.SetProgress(installProgress);
+                    }, pythonCli, "-m", "pip", "install", "--ignore-requires-python", "-U", BundledQtSpecifier);
+                    progress?.SetMarquee(false);
+                    progress?.SetProgress(100);
+                }
+                catch (Exception ex)
+                {
+                    LaunchError(ex.Message);
+                    progress?.DoClose();
+                    return;
+                }
             }
 
             progress?.DoClose();
 
             try
             {
-                string[] cmd = { pythonGui, "source\\main.py" };
+                Run(null, pythonCli, "-c", "import PySide6; from PySide6 import QtCore, QtGui, QtQml");
+            }
+            catch (Exception ex)
+            {
+                LaunchError("PySide6 validation failed after install.\n\n" + ex.Message);
+                return;
+            }
+
+            try
+            {
+                string[] cmd = { launchPython, "source\\main.py" };
                 Launch(cmd.Concat(args).ToArray());
             }
             catch (Exception ex)
