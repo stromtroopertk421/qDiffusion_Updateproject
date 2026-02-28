@@ -1,5 +1,5 @@
 from PySide6.QtCore import Property as pyqtProperty, Slot as pyqtSlot, Signal as pyqtSignal, QObject, QSize, QUrl, QMimeData, QByteArray
-from PySide6.QtQml import qmlRegisterSingletonType, qmlRegisterUncreatableType
+from PySide6.QtQml import qmlRegisterSingletonInstance, qmlRegisterUncreatableType
 from PySide6.QtGui import QImage, QDrag, QCursor
 from PySide6.QtWidgets import QApplication
 from PySide6.QtSql import QSqlQuery
@@ -75,7 +75,7 @@ class Basic(QObject):
         self._manager.artifact.connect(self.onArtifact)
         self._manager.finished.connect(self.onFinished)
 
-        qmlRegisterSingletonType(Basic, "gui", 1, 0, "BASIC", lambda qml_engine: self)
+        qmlRegisterSingletonInstance(Basic, "gui", 1, 0, "BASIC", self)
         qmlRegisterUncreatableType(Pose, "gui", 1, 0, "Pose", "Not a QML type")
         qmlRegisterUncreatableType(PoseNode, "gui", 1, 0, "PoseNode", "Not a QML type")
         qmlRegisterUncreatableType(PoseEdge, "gui", 1, 0, "PoseEdge", "Not a QML type")

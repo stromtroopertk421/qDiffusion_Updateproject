@@ -10,7 +10,7 @@ from parameters import VariantMap
 from misc import encodeImage
 
 from PySide6.QtCore import Property as pyqtProperty, Signal as pyqtSignal, QObject, Slot as pyqtSlot, QUrl, QPointF, QThread
-from PySide6.QtQml import qmlRegisterSingletonType, qmlRegisterUncreatableType
+from PySide6.QtQml import qmlRegisterSingletonInstance, qmlRegisterUncreatableType
 
 def constant_schedule(current_step, total_steps, warmup):
     warmup_steps = total_steps * warmup
@@ -153,7 +153,7 @@ class Trainer(QObject):
 
         self.reset()
 
-        qmlRegisterSingletonType(Trainer, "gui", 1, 0, "TRAINER", lambda qml_engine: self)
+        qmlRegisterSingletonInstance(Trainer, "gui", 1, 0, "TRAINER", self)
         self.gui.optionsUpdated.connect(self.optionsUpdated)
         self.gui.response.connect(self.onResponse)
 
