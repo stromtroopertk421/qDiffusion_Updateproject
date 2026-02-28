@@ -41,20 +41,16 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    Item {
-        anchors.fill: parent
-
-        Image {
-            opacity: 0.5
-            id: spinner
-            source: "icons/loading.svg"
-            width: 80
-            height: 80
-            sourceSize: Qt.size(width, height)
-            anchors.centerIn: parent
-            smooth: true
-            antialiasing: true
-        }
+    Image {
+        id: spinner
+        opacity: 0.5
+        source: "icons/loading.svg"
+        width: 80
+        height: 80
+        sourceSize: Qt.size(width, height)
+        anchors.centerIn: parent
+        smooth: true
+        antialiasing: true
     }
 
     function handleProceed() {

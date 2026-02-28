@@ -630,14 +630,6 @@ def launch(url):
     context.setContextProperty("TRANSLATOR", translator)
     context.setContextProperty("COORDINATOR", coordinator)
 
-    misc.registerTypes()
-
-    context = engine.rootContext()
-    context.setContextProperty("TRANSLATOR", translator)
-    context.setContextProperty("COORDINATOR", coordinator)
-
-    misc.registerTypes()
-
     splash_qml = QUrl.fromLocalFile(project_path("source", "qml", "Splash.qml"))
     engine.load(splash_qml)
 
