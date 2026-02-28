@@ -10,7 +10,7 @@ ApplicationWindow {
     title: "qDiffusion"
     flags: Qt.Window | Qt.WindowStaysOnTopHint
 
-    property var spinner: null
+    property Item spinner: null
 
     function createWindowComponent(url) {
         var component = Qt.createComponent(url)
@@ -42,6 +42,21 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
+    Component {
+        id: spinnerComponent
+
+        Image {
+            opacity: 0.5
+            source: "icons/loading.svg"
+            width: 80
+            height: 80
+            sourceSize: Qt.size(width, height)
+            anchors.centerIn: parent
+            smooth: true
+            antialiasing: true
+        }
+    }
+
     function handleProceed() {
         createWindowComponent("qrc:/Main.qml")
     }
@@ -66,10 +81,9 @@ ApplicationWindow {
 
     Component.onCompleted: {
         root.flags = Qt.Window
-        try {
-            createSpinner()
-        } catch (error) {
-            console.error("ERROR", "Splash spinner creation failed", error)
+        root.spinner = spinnerComponent.createObject(root.contentItem)
+        if (root.spinner === null) {
+            console.error("ERROR", "Failed to create splash spinner")
         }
 
         root.requestActivate()
