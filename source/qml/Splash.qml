@@ -61,6 +61,24 @@ ApplicationWindow {
         createWindowComponent("qrc:/Main.qml")
     }
 
+    function createSpinner() {
+        var spinnerQml = 'import QtQuick\nImage {\n' +
+            '    opacity: 0.5\n' +
+            '    source: "icons/loading.svg"\n' +
+            '    width: 80\n' +
+            '    height: 80\n' +
+            '    sourceSize: Qt.size(width, height)\n' +
+            '    anchors.centerIn: parent\n' +
+            '    smooth: true\n' +
+            '    antialiasing: true\n' +
+            '}'
+
+        root.spinner = Qt.createQmlObject(spinnerQml, root.contentItem, "SplashSpinner")
+        if (root.spinner === null) {
+            console.error("ERROR", "Failed to create splash spinner")
+        }
+    }
+
     Component.onCompleted: {
         root.flags = Qt.Window
         root.spinner = spinnerComponent.createObject(root.contentItem)
