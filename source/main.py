@@ -39,20 +39,6 @@ APPID = "arenasys.qdiffusion." + hashlib.md5(LAUNCHER.encode("utf-8")).hexdigest
 ERRORED = False
 _qml_warnings = []
 
-
-def _qt_message_handler(mode, context, message):
-    category = (context.category or "").lower()
-    if "qml" not in category and "js" not in category:
-        return
-
-    file_path = context.file or "<unknown>"
-    line = context.line or 0
-    formatted = f"QML MESSAGE [{context.category}] {file_path}:{line}: {message}"
-    _qml_warnings.append(formatted)
-    print(formatted, file=sys.stderr, flush=True)
-    with open(CRASH_LOG_PATH, "a", encoding="utf-8") as f:
-        f.write(f"GUI {datetime.datetime.now()}\n{formatted}\n")
-
 class Application(QApplication):
     t = QElapsedTimer()
 
@@ -600,7 +586,6 @@ def launch(url):
     import misc
 
     _qml_warnings.clear()
-    qInstallMessageHandler(_qt_message_handler)
 
     if url:
         sgnl = misc.Signaller()
