@@ -38,6 +38,22 @@ namespace qDiffusion
             }
         }
 
+
+        delegate void SetMarqueeCallback(bool enabled);
+
+        public void SetMarquee(bool enabled)
+        {
+            if (this.label.InvokeRequired)
+            {
+                SetMarqueeCallback d = new SetMarqueeCallback(SetMarquee);
+                this.Invoke(d, new object[] { enabled });
+            }
+            else
+            {
+                this.progressBar.Style = enabled ? ProgressBarStyle.Marquee : ProgressBarStyle.Continuous;
+            }
+        }
+
         delegate void DoCloseCallback();
 
         public void DoClose()
