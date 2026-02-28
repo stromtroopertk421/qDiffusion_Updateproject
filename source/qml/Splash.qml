@@ -8,7 +8,7 @@ ApplicationWindow {
     width: 1100
     height: 600
     color: "#1a1a1a"
-    title: (typeof TRANSLATOR !== "undefined" && TRANSLATOR && TRANSLATOR.instance) ? TRANSLATOR.instance.translate("qDiffusion", "Title") : "qDiffusion"
+    title: "qDiffusion"
     flags: Qt.Window | Qt.WindowStaysOnTopHint
 
     function handleShow() {
@@ -18,16 +18,20 @@ ApplicationWindow {
         } else {
             component.incubateObject(root, { window: root, spinner: null })
         }
-    Image {
-        opacity: 0.5
-        id: spinner
-        source: "icons/loading.svg"
-        width: 80
-        height: 80
-        sourceSize: Qt.size(width, height)
-        anchors.centerIn: parent
-        smooth: true
-        antialiasing: true
+    }
+
+    contentItem: Item {
+        Image {
+            opacity: 0.5
+            id: spinner
+            source: "icons/loading.svg"
+            width: 80
+            height: 80
+            sourceSize: Qt.size(width, height)
+            anchors.centerIn: parent
+            smooth: true
+            antialiasing: true
+        }
     }
 
     function handleProceed() {
