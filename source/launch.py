@@ -7,6 +7,8 @@ import datetime
 import importlib.util
 import shutil
 
+from paths import ensure_project_cwd
+
 PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 VENV_DIR = os.path.join(PROJECT_DIR, "venv")
 LAUNCH_PATH = os.path.abspath(__file__)
