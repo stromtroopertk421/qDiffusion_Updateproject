@@ -2,6 +2,7 @@ from PySide6.QtCore import Slot as pyqtSlot, Property as pyqtProperty, Signal as
 import os, re, glob, time, datetime
 
 import filesystem
+from paths import CRASH_LOG_PATH
 
 class Wildcards(QObject):
     updated = pyqtSignal()
@@ -42,7 +43,7 @@ class Wildcards(QObject):
                         sources[name] = path
                         wildcards[name] = lines
                 except Exception as e:
-                    with open("crash.log", "a", encoding='utf-8') as f:
+                    with open(CRASH_LOG_PATH, "a", encoding='utf-8') as f:
                         f.write(f"WILDCARD {datetime.datetime.now()}\nLOADING {file} FAILED: {str(e)}\n")
                     continue
         self._wildcards = wildcards

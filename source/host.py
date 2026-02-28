@@ -15,11 +15,12 @@ from PySide6.QtCore import Slot as pyqtSlot, Signal as pyqtSignal, QThread
 from PySide6.QtWidgets import QApplication
 
 import remote
+from paths import CRASH_LOG_PATH, source_path
 
 def log_traceback(label):
     exc_type, exc_value, exc_tb = sys.exc_info()
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    with open("crash.log", "a", encoding='utf-8') as f:
+    with open(CRASH_LOG_PATH, "a", encoding='utf-8') as f:
         f.write(f"{label} {datetime.datetime.now()}\n{tb}\n")
     print(label, tb)
     return tb
@@ -48,7 +49,7 @@ class HostProcess(multiprocessing.Process):
             sys.stderr = open(os.devnull, 'w')
             sys.__stderr__ = sys.stderr
         
-        sys.path.insert(0, os.path.abspath(os.path.join("source", "sd-inference-server")))
+        sys.path.insert(0, source_path("sd-inference-server"))
         import torch
         import storage, wrapper, server
 

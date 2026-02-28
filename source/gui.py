@@ -27,6 +27,7 @@ import wildcards
 import translation
 import misc
 import parameters
+from paths import CRASH_LOG_PATH
 
 NAME = "qDiffusion"
 
@@ -415,7 +416,7 @@ class GUI(QObject):
             trace = ""
             if "trace" in data:
                 trace = data["trace"]
-                with open("crash.log", "a", encoding='utf-8') as f:
+                with open(CRASH_LOG_PATH, "a", encoding='utf-8') as f:
                     f.write(f"INFERENCE {datetime.datetime.now()}\n{self._errorTrace}\n")
             self.setError(self._statusText, data["message"], trace)
             self.reset.emit(id)
@@ -426,7 +427,7 @@ class GUI(QObject):
             self._errorTrace = ""
             if "trace" in data:
                 self._errorTrace = data["trace"]
-                with open("crash.log", "a", encoding='utf-8') as f:
+                with open(CRASH_LOG_PATH, "a", encoding='utf-8') as f:
                     f.write(f"REMOTE {datetime.datetime.now()}\n{self._errorTrace}\n")
             self._remoteStatus = RemoteStatusMode.ERRORED
             self.statusUpdated.emit()

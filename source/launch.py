@@ -7,7 +7,11 @@ import datetime
 import importlib.util
 import shutil
 
-VENV_DIR = os.path.join(os.getcwd(), "venv")
+from paths import PROJECT_DIR, ensure_project_cwd
+
+VENV_DIR = os.path.join(PROJECT_DIR, "venv")
+LAUNCH_PATH = os.path.abspath(__file__)
+LOG_PATH = os.path.join(PROJECT_DIR, "launch.log")
 IS_WIN = platform.system() == 'Windows'
 PYTHON_RUN = sys.executable
 
@@ -25,6 +29,14 @@ def qt_version_matches_target():
 
 
 MISSING_QT = not qt_version_matches_target()
+
+
+def log(message):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    line = f"[{timestamp}] {message}"
+    print(line)
+    with open(LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(line + "\n")
 
 def get_env():
     env = {k:v for k,v in os.environ.items() if not k.startswith("QT") and not k.startswith("PIP") and not k.startswith("PYTHON")}
@@ -45,10 +57,15 @@ def get_env():
 
 def restart():
     venv_python = get_venv_python(gui=IS_WIN)
+    if not os.path.exists(venv_python):
+        raise FileNotFoundError(f"Missing venv python executable: {venv_python}")
+
+    command = [venv_python, LAUNCH_PATH] + sys.argv[1:]
+    log(f"RESTARTING VIA: {' '.join(command)}")
     if IS_WIN:
-        subprocess.Popen([venv_python, "source\\launch.py"] + sys.argv[1:], env=get_env(), creationflags=0x00000008|0x00000200)
+        subprocess.Popen(command, env=get_env(), creationflags=0x00000008 | 0x00000200)
     else:
-        subprocess.Popen([venv_python, "source/launch.py"] + sys.argv[1:], env=get_env())
+        subprocess.Popen(command, env=get_env())
     exit()
 
 def get_venv_python(gui=False):
@@ -71,7 +88,7 @@ def get_venv_python(gui=False):
     return os.path.join(scripts_dir, candidates[-1])
 
 def install_venv():
-    print(f"CREATING VENV... ({VENV_DIR})")
+    log(f"CREATING VENV... ({VENV_DIR})")
     subprocess.run([PYTHON_RUN, "-m", "venv", VENV_DIR], check=True)
 
 def venv_version_matches_target():
@@ -92,21 +109,24 @@ def venv_version_matches_target():
     return False
 
 def install_qt():
-    print("INSTALLING PySide6...")
+    log("INSTALLING PySide6...")
     subprocess.run([get_venv_python(), "-m", "pip", "install", "--ignore-requires-python", "--force-reinstall", QT_VER], env=get_env(), check=True)
 
 def exceptHook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    with open("crash.log", "a", encoding='utf-8') as f:
+    crash_path = os.path.join(PROJECT_DIR, "crash.log")
+    with open(crash_path, "a", encoding='utf-8') as f:
         f.write(f"LAUNCH {datetime.datetime.now()}\n{tb}\n")
     print(tb)
-    print("TRACEBACK SAVED: crash.log")
+    print(f"TRACEBACK SAVED: {crash_path}")
 
     if not "pythonw" in PYTHON_RUN:
         input("PRESS ENTER TO CLOSE")
 
 if __name__ == "__main__":
+    ensure_project_cwd()
     sys.excepthook = exceptHook
+    log(f"LAUNCH START cwd={os.getcwd()} project={PROJECT_DIR} python={PYTHON_RUN}")
 
     if sys.version_info < (3, 14):
         print(f"Python 3.14 or greater is required. Have Python {sys.version_info[0]}.{sys.version_info[1]}.")
@@ -121,8 +141,6 @@ if __name__ == "__main__":
         input()
         exit()
     
-    VENV_DIR = os.path.abspath(VENV_DIR)
-
     invalid = ''.join([c for c in VENV_DIR if ord(c) > 127])
     if invalid:
         print(f"PATH INVALID ({VENV_DIR}) CONTAINS UNICODE ({invalid})")
@@ -139,7 +157,7 @@ if __name__ == "__main__":
     stale_venv = (not missing_venv) and (not venv_version_matches_target())
 
     if stale_venv:
-        print(f"REMOVING STALE VENV (expected Python {PYTHON_TARGET_VERSION})...")
+        log(f"REMOVING STALE VENV (expected Python {PYTHON_TARGET_VERSION})...")
         shutil.rmtree(VENV_DIR, ignore_errors=True)
         missing_venv = True
 
@@ -147,7 +165,7 @@ if __name__ == "__main__":
         if missing_venv:
             install_venv()
             install_qt()
-            print("DONE.")
+            log("DONE.")
         restart()
     elif inside_venv and MISSING_QT:
         install_qt()
