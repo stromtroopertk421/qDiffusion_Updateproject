@@ -257,7 +257,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
             }
             SText {
-                id: valueText
+                id: optionValueText
                 anchors.left: parent.left
                 anchors.right: decoText.left
 
@@ -341,7 +341,7 @@ Item {
             }
             
             SText {
-                id: valueText
+                id: selectedValueText
                 anchors.right: parent.right
                 anchors.left: labelText.right
                 anchors.top: parent.top
