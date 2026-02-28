@@ -259,10 +259,72 @@ namespace qDiffusion
             }
         }
 
+
+        private static string QuoteArgument(string argument)
+        {
+            if (argument == null)
+            {
+                return "\"\"";
+            }
+
+            if (argument.Length == 0)
+            {
+                return "\"\"";
+            }
+
+            bool needsQuotes = argument.Any(char.IsWhiteSpace) || argument.Contains("\"");
+            if (!needsQuotes)
+            {
+                return argument;
+            }
+
+            var builder = new StringBuilder();
+            builder.Append('"');
+
+            int backslashes = 0;
+            foreach (char c in argument)
+            {
+                if (c == '\\')
+                {
+                    backslashes++;
+                    continue;
+                }
+
+                if (c == '"')
+                {
+                    builder.Append('\\', backslashes * 2 + 1);
+                    builder.Append('"');
+                    backslashes = 0;
+                    continue;
+                }
+
+                if (backslashes > 0)
+                {
+                    builder.Append('\\', backslashes);
+                    backslashes = 0;
+                }
+
+                builder.Append(c);
+            }
+
+            if (backslashes > 0)
+            {
+                builder.Append('\\', backslashes * 2);
+            }
+
+            builder.Append('"');
+            return builder.ToString();
+        }
+
+        private static string BuildArguments(string[] args)
+        {
+            return string.Join(" ", args.Skip(1).Select(QuoteArgument));
+        }
+
         public static void Run(Action<string> onOutput = null, params string[] args)
         {
             string command = args[0];
-            string arguments = string.Join(" ", args, 1, args.Length - 1);
+            string arguments = BuildArguments(args);
 
             ProcessStartInfo startInfo = new ProcessStartInfo(command, arguments)
             {
@@ -321,7 +383,7 @@ namespace qDiffusion
         public static void Launch(params string[] args)
         {
             string command = args[0];
-            string arguments = string.Join(" ", args, 1, args.Length - 1);
+            string arguments = BuildArguments(args);
 
             ProcessStartInfo startInfo = new ProcessStartInfo(command, arguments)
             {
