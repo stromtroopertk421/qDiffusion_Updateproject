@@ -37,6 +37,7 @@ NAME = "qDiffusion"
 LAUNCHER = project_path("qDiffusion.exe")
 APPID = "arenasys.qdiffusion." + hashlib.md5(LAUNCHER.encode("utf-8")).hexdigest()
 ERRORED = False
+_qml_warnings = []
 
 class Application(QApplication):
     t = QElapsedTimer()
@@ -576,12 +577,15 @@ class Coordinator(QObject):
 def _on_qml_warnings(warnings):
     for w in warnings:
         warning = f"QML WARNING: {w.toString()}"
+        _qml_warnings.append(warning)
         print(warning, file=sys.stderr, flush=True)
         with open(CRASH_LOG_PATH, "a", encoding="utf-8") as f:
             f.write(f"GUI {datetime.datetime.now()}\n{warning}\n")
 
 def launch(url):
     import misc
+
+    _qml_warnings.clear()
 
     if url:
         sgnl = misc.Signaller()
@@ -616,6 +620,7 @@ def launch(url):
     engine = QQmlApplicationEngine()
     engine.quit.connect(app.quit)
     engine.warnings.connect(_on_qml_warnings)
+    engine.addImportPath(project_path("source", "qml"))
     
     translator = Translator(app)
     coordinator = Coordinator(app, engine)
@@ -638,7 +643,12 @@ def launch(url):
 
     root_objects = engine.rootObjects()
     if not root_objects:
-        raise RuntimeError(f"Failed to load QML root object: {splash_qml.toString()}")
+        warning_text = "\n".join(_qml_warnings) or "(no QML warnings captured)"
+        with open(CRASH_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(f"GUI {datetime.datetime.now()}\nQML ERRORS:\n{warning_text}\n")
+        raise RuntimeError(
+            f"Failed to load QML root object: {splash_qml.toString()}\n{warning_text}"
+        )
 
     if IS_WIN:
         hwnd = root_objects[0].winId()
