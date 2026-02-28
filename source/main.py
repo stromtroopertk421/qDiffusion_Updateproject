@@ -340,7 +340,7 @@ class Coordinator(QObject):
 
         self.find_needed()
 
-        qmlRegisterSingletonType(Coordinator, "gui", 1, 0, "COORDINATOR", lambda qml, js: self)
+        qmlRegisterSingletonType(Coordinator, "gui", 1, 0, "COORDINATOR", lambda qml_engine: self)
 
     def find_needed(self):
         self.install_blocker = ""
@@ -643,7 +643,7 @@ def start(engine, app):
     engine.addImageProvider("async", backend.thumbnails.async_provider)
     engine.addImageProvider("big", backend.thumbnails.big_provider)
 
-    qmlRegisterSingletonType(gui.GUI, "gui", 1, 0, "GUI", lambda qml, js: backend)
+    qmlRegisterSingletonType(gui.GUI, "gui", 1, 0, "GUI", lambda qml_engine: backend)
     
     loadTabs(backend, backend)
 
