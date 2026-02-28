@@ -18,6 +18,16 @@ ApplicationWindow {
         } else {
             component.incubateObject(root, { window: root, spinner: null })
         }
+    Image {
+        opacity: 0.5
+        id: spinner
+        source: "icons/loading.svg"
+        width: 80
+        height: 80
+        sourceSize: Qt.size(width, height)
+        anchors.centerIn: parent
+        smooth: true
+        antialiasing: true
     }
 
     function handleProceed() {

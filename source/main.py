@@ -618,6 +618,7 @@ def launch(url):
     
     translator = Translator(app)
     coordinator = Coordinator(app, engine)
+    misc.registerTypes()
 
     context = engine.rootContext()
     context.setContextProperty("TRANSLATOR", translator)
