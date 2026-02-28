@@ -50,6 +50,15 @@ namespace qDiffusion
             MessageBox.Show(error, "Error occurred", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
+        private void CloseProgress()
+        {
+            if (progress != null)
+            {
+                progress.DoClose();
+                progress = null;
+            }
+        }
+
         static void RegisterProtocol(string exe)
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Classes\qDiffusion");
@@ -653,6 +662,7 @@ namespace qDiffusion
 
             try
             {
+                CloseProgress();
                 string[] cmd = { launchPython, "source\\main.py" };
                 Launch(cmd.Concat(args).ToArray());
             }
