@@ -15,7 +15,7 @@ ApplicationWindow {
     Image {
         opacity: 0.5
         id: spinner
-        source: "file:source/qml/icons/loading.svg"
+        source: "icons/loading.svg"
         width: 80
         height: 80
         sourceSize: Qt.size(width, height)
