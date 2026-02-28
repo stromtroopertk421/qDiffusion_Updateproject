@@ -277,7 +277,7 @@ class Explorer(QObject):
         self._metadata = {}
         self._inspector = misc.InspectorManager(self)
 
-        qmlRegisterSingletonType(Explorer, "gui", 1, 0, "EXPLORER", lambda qml, js: self)
+        qmlRegisterSingletonType(Explorer, "gui", 1, 0, "EXPLORER", lambda qml_engine: self)
 
         self.gui.optionsUpdated.connect(self.optionsUpdated)
         self.gui.favUpdated.connect(self.favouritesUpdated)
