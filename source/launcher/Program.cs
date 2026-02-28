@@ -663,7 +663,7 @@ namespace qDiffusion
             try
             {
                 CloseProgress();
-                string[] cmd = { launchPython, "source\\main.py" };
+                string[] cmd = { launchPython, "source\\launch.py" };
                 Launch(cmd.Concat(args).ToArray());
             }
             catch (Exception ex)

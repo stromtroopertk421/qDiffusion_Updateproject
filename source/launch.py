@@ -19,6 +19,7 @@ PYTHON_RUN = sys.executable
 PYTHON_TARGET_VERSION = "3.14.3"
 QT_PACKAGE = "PySide6"
 QT_VER = "PySide6==6.10.2"
+BOOTSTRAP_PACKAGES = ["packaging==24.2"]
 
 
 def qt_version_matches_target():
@@ -113,6 +114,18 @@ def install_qt():
     log("INSTALLING PySide6...")
     subprocess.run([get_venv_python(), "-m", "pip", "install", "--ignore-requires-python", "--force-reinstall", QT_VER], env=get_env(), check=True)
 
+
+def install_bootstrap_package(package):
+    log(f"INSTALLING BOOTSTRAP PACKAGE {package}...")
+    subprocess.run([get_venv_python(), "-m", "pip", "install", "-U", package], env=get_env(), check=True)
+
+
+def ensure_bootstrap_packages():
+    for package in BOOTSTRAP_PACKAGES:
+        module_name = package.split("=", 1)[0].strip().replace("-", "_")
+        if not importlib.util.find_spec(module_name):
+            install_bootstrap_package(package)
+
 def exceptHook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
     crash_path = os.path.join(PROJECT_DIR, "crash.log")
@@ -170,6 +183,8 @@ if __name__ == "__main__":
         restart()
     elif inside_venv and MISSING_QT:
         install_qt()
+
+    ensure_bootstrap_packages()
 
     import main
     main.main()
