@@ -632,9 +632,7 @@ def launch(url):
 
 def ready():
     import qml.qml_rc
-    import misc
     qmlRegisterSingletonType(QUrl("qrc:/Common.qml"), "gui", 1, 0, "COMMON")
-    misc.registerTypes()
 
 def start(engine, app):
     import gui
