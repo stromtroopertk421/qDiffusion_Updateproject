@@ -660,6 +660,9 @@ def _validate_applicationwindow_content(qml_root):
 
 def launch(url):
     import misc
+    from qml.build_resources import ensure_qml_resources
+
+    ensure_qml_resources()
     import qml.qml_rc
 
     _qml_warnings.clear()
