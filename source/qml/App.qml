@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQml
 import gui 1.0
 
 ApplicationWindow {
@@ -22,22 +23,15 @@ ApplicationWindow {
         }
     }
 
-    // Workaround: Qt 6.10+ can throw a hard warning when Connections is placed in
-    // ApplicationWindow.data. Parent it under an invisible Item instead.
-    Item {
-        id: coordinatorHooks
-        visible: false
+    Connections {
+        target: COORDINATOR
 
-        Connections {
-            target: COORDINATOR
+        function onShow() {
+            root.viewState = "installer"
+        }
 
-            function onShow() {
-                root.viewState = "installer"
-            }
-
-            function onProceed() {
-                root.viewState = "main"
-            }
+        function onProceed() {
+            root.viewState = "main"
         }
     }
 
