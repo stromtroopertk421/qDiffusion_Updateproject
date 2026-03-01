@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
-import Qt.labs.platform
 
 import gui
 
@@ -261,7 +261,7 @@ Item {
                 nameFilters: [root.tr("Model files") + " (*.ckpt *.safetensors *.pt *.pth)"]
 
                 onAccepted: {
-                    uploadFileInput.value = SETTINGS.toLocal(uploadFileDialog.file)
+                    uploadFileInput.value = SETTINGS.toLocal(uploadFileDialog.selectedFile)
                 }
             }
 
