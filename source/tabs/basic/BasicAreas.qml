@@ -1,32 +1,52 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
+import Qt.labs.platform 1.1
 
-Frame {
+import gui 1.0
+import "../../style"
+import "../../components"
+
+Item {
     id: root
-    property alias title: titleLabel.text
 
-    background: Rectangle {
-        color: "#20242b"
-        radius: 6
+    SShadow {
+        opacity: 0.7
+        anchors.fill: parent
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 8
+    BasicInputs {
+        id: inputArea
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: divider.top
+    }
 
-        Label {
-            id: titleLabel
-            text: "Workspace"
-            font.bold: true
-        }
+    BasicOutputs {
+        id: outputArea
+        anchors.top: divider.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+    }
 
-        Label {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            text: "Canvas and region controls are being reintroduced with the Qt 6 style layer."
-            wrapMode: Text.WordWrap
-            verticalAlignment: Text.AlignVCenter
+    SDividerHB {
+        id: divider
+        minOffset: 128
+        maxOffset: parent.height-128
+        offset: snap
+        snap: Math.floor(parent.height/2)+2
+        snapSize: 20
+        height: 4
+        topOverflow: inputArea.scrollBar.policy == ScrollBar.AlwaysOn ? 0 : 6
+        bottomOverflow: 6
+        color: "transparent"
+        Rectangle {
+            anchors.fill: parent
+            color: COMMON.bg5
+            anchors.topMargin: 1
+            anchors.bottomMargin: 1
         }
     }
 }
