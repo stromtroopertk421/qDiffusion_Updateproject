@@ -193,7 +193,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onPressed: {
+        onPressed: function(mouse) {
             if(mouse.button == Qt.LeftButton) {
                 root.close()
             }
@@ -258,12 +258,12 @@ Item {
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-                onReleased: {
+                onReleased: function() {
                     pointDrag.point = null
                     target.syncSegmentationPoints()
                 }
 
-                onDoubleClicked: {
+                onDoubleClicked: function(mouse) {
                     var x = Math.floor(mouseX/points.factor)
                     var y = Math.floor(mouseY/points.factor)
                     if(mouse.button & Qt.LeftButton) {
@@ -336,7 +336,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: -3
                         acceptedButtons: Qt.LeftButton | Qt.RightButton
-                        onPressed: {
+                        onPressed: function(mouse) {
                             if(mouse.buttons & Qt.LeftButton) {
                                 pointDrag.point = point
                                 mouse.accepted = false
@@ -495,7 +495,7 @@ Item {
                 return Math.sqrt(distX*distX + distY * distY)
             }
 
-            onPressed: {
+            onPressed: function(mouse) {
                 if(resizingBrush) {
                     return
                 }
@@ -508,7 +508,7 @@ Item {
                 canvas.mousePressed(getPosition(mouse), mouse.modifiers)
             }
 
-            onReleased: {
+            onReleased: function(mouse) {
                 if(resizingBrush) {
                     return
                 }
@@ -532,7 +532,7 @@ Item {
                 //rings.mousePosition = Qt.point(0,0)
             }
 
-            onWheel: {
+            onWheel: function(wheel) {
                 if (!(wheel.modifiers & Qt.ControlModifier)) {
                     wheel.accepted = false
                     return
@@ -914,7 +914,7 @@ Item {
 
     Keys.forwardTo: root.posing ? [poseEditor] : []
     
-    Keys.onPressed: {
+    Keys.onPressed: function(event) {
         if(root.posing) {
             event.accepted = false
             return
@@ -992,7 +992,7 @@ Item {
         }
     }
 
-    Keys.onReleased: {
+    Keys.onReleased: function(event) {
         switch(event.key) {
         case Qt.Key_Alt:
             mouseArea.resizingBrush = false
