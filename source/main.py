@@ -32,6 +32,7 @@ from PySide6.QtGui import QIcon
 from translation import Translator
 from paths import CRASH_LOG_PATH, ensure_project_cwd, project_path
 from qml_compat import register_qml_singleton
+from qt_env_report import dump_qt_env
 
 NAME = "qDiffusion"
 LAUNCHER = project_path("qDiffusion.exe")
@@ -582,6 +583,13 @@ def _on_qml_warnings(warnings):
         with open(CRASH_LOG_PATH, "a", encoding="utf-8") as f:
             f.write(f"GUI {datetime.datetime.now()}\n{warning}\n")
 
+
+def _qt_env_logger(line):
+    text = str(line)
+    print(text, file=sys.stderr, flush=True)
+    with open(CRASH_LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(f"{text}\n")
+
 def launch(url):
     import misc
 
@@ -616,8 +624,13 @@ def launch(url):
     app.setOrganizationName("qDiffusion")
     app.setOrganizationDomain("qDiffusion")
     app.endpoint = url
-    
+
     engine = QQmlApplicationEngine()
+
+    with open(CRASH_LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(f"GUI {datetime.datetime.now()}\n")
+    dump_qt_env(_qt_env_logger, app=app, engine=engine)
+
     engine.quit.connect(app.quit)
     engine.warnings.connect(_on_qml_warnings)
     engine.addImportPath(project_path("source", "qml"))
