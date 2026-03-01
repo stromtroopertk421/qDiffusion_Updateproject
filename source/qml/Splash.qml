@@ -10,7 +10,9 @@ ApplicationWindow {
     title: "qDiffusion"
     flags: Qt.Window | Qt.WindowStaysOnTopHint
 
-    property Item spinner: splashSpinner
+    // Keep the spinner as an always-instantiated visual child item.
+    // Do not wrap this in Component {} to avoid ApplicationWindow contentData errors.
+    property alias spinner: splashSpinner
 
     function createWindowComponent(url) {
         var component = Qt.createComponent(url)

@@ -683,6 +683,43 @@ def _enforce_strict_qt_env(engine_import_paths=None):
         f"Detected paths:\n{details}"
     )
 
+
+def _validate_applicationwindow_content(qml_root):
+    qml_root = Path(qml_root)
+    violations = []
+
+    for qml_path in sorted(qml_root.rglob("*.qml")):
+        try:
+            lines = qml_path.read_text(encoding="utf-8").splitlines()
+        except Exception:
+            continue
+
+        depth = 0
+        window_depths = []
+
+        for line_no, line in enumerate(lines, start=1):
+            stripped = line.strip()
+            line_depth = depth
+
+            if stripped.startswith("ApplicationWindow") and "{" in stripped:
+                window_depths.append(line_depth)
+
+            if window_depths and line_depth == window_depths[-1] + 1 and re.match(r"^Component\s*\{", stripped):
+                violations.append(f"{qml_path}:{line_no}")
+
+            depth += line.count("{") - line.count("}")
+            while window_depths and depth <= window_depths[-1]:
+                window_depths.pop()
+
+    if violations:
+        details = "\n".join([f"- {item}" for item in violations])
+        raise RuntimeError(
+            "Found inline Component {} declarations directly under ApplicationWindow. "
+            "Use concrete visual items (e.g., Item/Image) or instantiate safely elsewhere.\n"
+            f"Violations:\n{details}"
+        )
+
+
 def launch(url):
     import misc
 
@@ -699,7 +736,8 @@ def launch(url):
 
     plugins, qml = _force_qt_runtime_paths()
     _enforce_strict_qt_env()
-    
+    _validate_applicationwindow_content(project_path("source", "qml"))
+
     QCoreApplication.setAttribute(Qt.AA_UseDesktopOpenGL, True)
 
     scaling = False
