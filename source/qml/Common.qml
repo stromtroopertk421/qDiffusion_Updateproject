@@ -1,6 +1,5 @@
 pragma Singleton
-import QtQuick 2.15
-
+import QtQuick
 QtObject {
     readonly property var pointValue: 9.3
     readonly property var pointLabel: 9.4

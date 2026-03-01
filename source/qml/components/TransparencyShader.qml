@@ -1,6 +1,5 @@
 	
-import QtQuick 2.0
-
+import QtQuick
 Item {
     id: root
     property real gridSize: 15.0

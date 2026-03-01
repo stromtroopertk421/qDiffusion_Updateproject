@@ -1,8 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
-import QtQuick.Layouts 1.15
-
+import QtQuick.Layouts
 import gui 1.0
 
 import "style"
