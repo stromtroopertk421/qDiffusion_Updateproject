@@ -1,5 +1,5 @@
-import QtQuick
-import QtQuick.Controls
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 
 ApplicationWindow {
     id: root
@@ -24,7 +24,7 @@ ApplicationWindow {
                 return
             }
 
-            var object = component.createObject(root, { window: root, spinner: root.spinner })
+            var object = component.createObject(root.contentItem, { window: root, spinner: root.spinner })
             if (object === null) {
                 console.error("ERROR", "Failed to create object for", url, component.errorString())
             }
@@ -42,9 +42,7 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    Component {
-        id: spinnerComponent
-
+    property Component spinnerComponent: Component {
         Image {
             opacity: 0.5
             source: "icons/loading.svg"
