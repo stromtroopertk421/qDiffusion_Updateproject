@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import QtQuick.Layouts
 
 import gui
@@ -21,21 +22,19 @@ Item {
     signal changed()
     signal deleteModel(string model)
 
-    RectangularGlow {
-        anchors.fill: modelCard
-        glowRadius: 10
-        opacity: 0.2
-        spread: 0.2
-        color: "black"
-        cornerRadius: 10
-    }
-
     Rectangle {
         id: modelCard
         anchors.fill: parent
         anchors.leftMargin: modelsView.padding
         anchors.topMargin: modelsView.padding
         color: COMMON.bg1
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowBlur: 0.6
+            shadowColor: "black"
+            shadowOpacity: 0.2
+        }
 
         property var selected: false
         property var showing: grid.showInfo
@@ -130,11 +129,12 @@ Item {
                 anchors.centerIn: parent
             }
 
-            ColorOverlay {
+            MultiEffect {
                 visible: placeholder.visible
                 anchors.fill: placeholder
                 source: placeholder
-                color: addDrop.containsDrag ? COMMON.fg2 : COMMON.bg4
+                colorization: 1.0
+                colorizationColor: addDrop.containsDrag ? COMMON.fg2 : COMMON.bg4
             }
         }
 
@@ -321,17 +321,6 @@ Item {
             clip: true
             anchors.fill: labelBg
 
-            Glow {
-                property var target: labelTextEdit.visible ? labelTextEdit : labelText
-                visible: !modelCard.info
-                opacity: 0.4
-                anchors.fill: target
-                radius: 5
-                samples: 8
-                color: "#000000"
-                source: target
-            }
-
             SText {
                 id: labelText
                 visible: !labelTextEdit.visible
@@ -343,6 +332,13 @@ Item {
                 elide: Text.ElideRight
                 leftPadding: 5
                 rightPadding: 5
+                layer.enabled: !modelCard.info
+                layer.effect: MultiEffect {
+                    shadowEnabled: true
+                    shadowBlur: 0.4
+                    shadowColor: "black"
+                    shadowOpacity: 0.4
+                }
             }
 
             STextInput {
@@ -355,6 +351,13 @@ Item {
                 color: COMMON.fg1
                 leftPadding: 5
                 rightPadding: 5
+                layer.enabled: !modelCard.info
+                layer.effect: MultiEffect {
+                    shadowEnabled: true
+                    shadowBlur: 0.4
+                    shadowColor: "black"
+                    shadowOpacity: 0.4
+                }
 
                 onActiveFocusChanged: {
                     if(activeFocus) {
