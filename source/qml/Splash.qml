@@ -10,7 +10,7 @@ ApplicationWindow {
     title: "qDiffusion"
     flags: Qt.Window | Qt.WindowStaysOnTopHint
 
-    property Item spinner: null
+    property Item spinner: splashSpinner
 
     function createWindowComponent(url) {
         var component = Qt.createComponent(url)
@@ -42,48 +42,24 @@ ApplicationWindow {
         createWindowComponent("qrc:/Installer.qml")
     }
 
-    property Component spinnerComponent: Component {
-        Image {
-            opacity: 0.5
-            source: "icons/loading.svg"
-            width: 80
-            height: 80
-            sourceSize: Qt.size(width, height)
-            anchors.centerIn: parent
-            smooth: true
-            antialiasing: true
-        }
+    Image {
+        id: splashSpinner
+        opacity: 0.5
+        source: "icons/loading.svg"
+        width: 80
+        height: 80
+        sourceSize: Qt.size(width, height)
+        anchors.centerIn: parent
+        smooth: true
+        antialiasing: true
     }
 
     function handleProceed() {
         createWindowComponent("qrc:/Main.qml")
     }
 
-    function createSpinner() {
-        var spinnerQml = 'import QtQuick\nImage {\n' +
-            '    opacity: 0.5\n' +
-            '    source: "icons/loading.svg"\n' +
-            '    width: 80\n' +
-            '    height: 80\n' +
-            '    sourceSize: Qt.size(width, height)\n' +
-            '    anchors.centerIn: parent\n' +
-            '    smooth: true\n' +
-            '    antialiasing: true\n' +
-            '}'
-
-        root.spinner = Qt.createQmlObject(spinnerQml, root.contentItem, "SplashSpinner")
-        if (root.spinner === null) {
-            console.error("ERROR", "Failed to create splash spinner")
-        }
-    }
-
     Component.onCompleted: {
         root.flags = Qt.Window
-        root.spinner = spinnerComponent.createObject(root.contentItem)
-        if (root.spinner === null) {
-            console.error("ERROR", "Failed to create splash spinner")
-        }
-
         root.requestActivate()
         if (typeof COORDINATOR !== "undefined" && COORDINATOR) {
             COORDINATOR.show.connect(root.handleShow)
