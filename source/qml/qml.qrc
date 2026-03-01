@@ -1,0 +1,164 @@
+<RCC>
+    <qresource prefix="/">
+        <file>App.qml</file>
+        <file>Common.qml</file>
+        <file>Error.qml</file>
+        <file>Installer.qml</file>
+        <file>Main.qml</file>
+        <file>Splash.qml</file>
+        <file>components/CenteredItem.qml</file>
+        <file>components/ColorPicker.qml</file>
+        <file>components/DetailerDialog.qml</file>
+        <file>components/ErrorDialog.qml</file>
+        <file>components/GenerateButton.qml</file>
+        <file>components/GridDialog.qml</file>
+        <file>components/GridRow.qml</file>
+        <file>components/ImportDialog.qml</file>
+        <file>components/InspectorDialog.qml</file>
+        <file>components/LoadingSpinner.qml</file>
+        <file>components/MovableImage.qml</file>
+        <file>components/MovableItem.qml</file>
+        <file>components/Parameters.qml</file>
+        <file>components/ParametersDetailerItem.qml</file>
+        <file>components/ParametersNetItem.qml</file>
+        <file>components/PoseEditor.qml</file>
+        <file>components/PoseEditorEdge.qml</file>
+        <file>components/PoseEditorNode.qml</file>
+        <file>components/Prompts.qml</file>
+        <file>components/Status.qml</file>
+        <file>components/StatusBar.qml</file>
+        <file>components/Suggestions.qml</file>
+        <file>components/TabBar.qml</file>
+        <file>components/TransparencyShader.qml</file>
+        <file>components/WindowBar.qml</file>
+        <file>style/OChoice.qml</file>
+        <file>style/OColumn.qml</file>
+        <file>style/OSlider.qml</file>
+        <file>style/OText.qml</file>
+        <file>style/OTextInput.qml</file>
+        <file>style/SAnimation.qml</file>
+        <file>style/SButton.qml</file>
+        <file>style/SColumnButton.qml</file>
+        <file>style/SComboBox.qml</file>
+        <file>style/SContextMenu.qml</file>
+        <file>style/SContextMenuItem.qml</file>
+        <file>style/SContextMenuSeparator.qml</file>
+        <file>style/SDialog.qml</file>
+        <file>style/SDictView.qml</file>
+        <file>style/SDividerHB.qml</file>
+        <file>style/SDividerHT.qml</file>
+        <file>style/SDividerVL.qml</file>
+        <file>style/SDividerVR.qml</file>
+        <file>style/SFileDrop.qml</file>
+        <file>style/SGlow.qml</file>
+        <file>style/SHeader.qml</file>
+        <file>style/SIcon.qml</file>
+        <file>style/SIconButton.qml</file>
+        <file>style/SMenu.qml</file>
+        <file>style/SMenuBar.qml</file>
+        <file>style/SMenuItem.qml</file>
+        <file>style/SMenuSeparator.qml</file>
+        <file>style/SMovableDialog.qml</file>
+        <file>style/SProgress.qml</file>
+        <file>style/SScrollBarH.qml</file>
+        <file>style/SScrollBarV.qml</file>
+        <file>style/SShadow.qml</file>
+        <file>style/STabBar.qml</file>
+        <file>style/STabButton.qml</file>
+        <file>style/SText.qml</file>
+        <file>style/STextArea.qml</file>
+        <file>style/STextInput.qml</file>
+        <file>style/STextSelectable.qml</file>
+        <file>style/SToolTip.qml</file>
+        <file>icons/archive.svg</file>
+        <file>icons/back.svg</file>
+        <file>icons/bookmark.svg</file>
+        <file>icons/bookshelf.svg</file>
+        <file>icons/brain.svg</file>
+        <file>icons/brush.svg</file>
+        <file>icons/circle_0.svg</file>
+        <file>icons/circle_1.svg</file>
+        <file>icons/circle_2.svg</file>
+        <file>icons/circle_3.svg</file>
+        <file>icons/circle_4.svg</file>
+        <file>icons/circle_5.svg</file>
+        <file>icons/circle_6.svg</file>
+        <file>icons/circle_7.svg</file>
+        <file>icons/circle_8.svg</file>
+        <file>icons/circle_loading.svg</file>
+        <file>icons/copy.svg</file>
+        <file>icons/crop.svg</file>
+        <file>icons/cross.svg</file>
+        <file>icons/cube.svg</file>
+        <file>icons/disconnect.svg</file>
+        <file>icons/down.svg</file>
+        <file>icons/download.svg</file>
+        <file>icons/ellipse_select.svg</file>
+        <file>icons/ellipsis.svg</file>
+        <file>icons/eraser.svg</file>
+        <file>icons/eye.svg</file>
+        <file>icons/folder.svg</file>
+        <file>icons/fuzzy_select.svg</file>
+        <file>icons/globe-frame.svg</file>
+        <file>icons/info-big.svg</file>
+        <file>icons/info-outline-big.svg</file>
+        <file>icons/info-outline.svg</file>
+        <file>icons/info.svg</file>
+        <file>icons/key.svg</file>
+        <file>icons/loading.svg</file>
+        <file>icons/loading_big.svg</file>
+        <file>icons/mask.svg</file>
+        <file>icons/move.svg</file>
+        <file>icons/next.svg</file>
+        <file>icons/package.svg</file>
+        <file>icons/paint.svg</file>
+        <file>icons/path_select.svg</file>
+        <file>icons/person.svg</file>
+        <file>icons/placeholder.svg</file>
+        <file>icons/placeholder_black.svg</file>
+        <file>icons/plus.svg</file>
+        <file>icons/rectangle_select.svg</file>
+        <file>icons/refresh.svg</file>
+        <file>icons/reply.svg</file>
+        <file>icons/rotate.svg</file>
+        <file>icons/save.svg</file>
+        <file>icons/search.svg</file>
+        <file>icons/settings.svg</file>
+        <file>icons/sort.svg</file>
+        <file>icons/star-outline-big.svg</file>
+        <file>icons/star-outline.svg</file>
+        <file>icons/star.svg</file>
+        <file>icons/text.svg</file>
+        <file>icons/text_2.svg</file>
+        <file>icons/tick.svg</file>
+        <file>icons/translate.svg</file>
+        <file>icons/trash.svg</file>
+        <file>icons/warning.svg</file>
+        <file>icons/window.svg</file>
+        <file>fonts/Cantarell-Bold.ttf</file>
+        <file>fonts/Cantarell-Regular.ttf</file>
+        <file>fonts/SourceCodePro-Regular.ttf</file>
+        <file alias="tabs/basic/Basic.qml">../tabs/basic/Basic.qml</file>
+        <file alias="tabs/basic/BasicAreas.qml">../tabs/basic/BasicAreas.qml</file>
+        <file alias="tabs/basic/BasicFull.qml">../tabs/basic/BasicFull.qml</file>
+        <file alias="tabs/basic/BasicInputs.qml">../tabs/basic/BasicInputs.qml</file>
+        <file alias="tabs/basic/BasicOutputs.qml">../tabs/basic/BasicOutputs.qml</file>
+        <file alias="tabs/compat/ColorOverlay.qml">../tabs/compat/ColorOverlay.qml</file>
+        <file alias="tabs/compat/RectangularGlow.qml">../tabs/compat/RectangularGlow.qml</file>
+        <file alias="tabs/explorer/CategoryButton.qml">../tabs/explorer/CategoryButton.qml</file>
+        <file alias="tabs/explorer/Explorer.qml">../tabs/explorer/Explorer.qml</file>
+        <file alias="tabs/explorer/ModelCard.qml">../tabs/explorer/ModelCard.qml</file>
+        <file alias="tabs/explorer/ModelGrid.qml">../tabs/explorer/ModelGrid.qml</file>
+        <file alias="tabs/explorer/SubfolderList.qml">../tabs/explorer/SubfolderList.qml</file>
+        <file alias="tabs/gallery/Gallery.qml">../tabs/gallery/Gallery.qml</file>
+        <file alias="tabs/gallery/Thumbnail.qml">../tabs/gallery/Thumbnail.qml</file>
+        <file alias="tabs/gallery/ThumbnailGrid.qml">../tabs/gallery/ThumbnailGrid.qml</file>
+        <file alias="tabs/merger/Merger.qml">../tabs/merger/Merger.qml</file>
+        <file alias="tabs/settings/HostSettings.qml">../tabs/settings/HostSettings.qml</file>
+        <file alias="tabs/settings/ProgramSettings.qml">../tabs/settings/ProgramSettings.qml</file>
+        <file alias="tabs/settings/RemoteSettings.qml">../tabs/settings/RemoteSettings.qml</file>
+        <file alias="tabs/settings/Settings.qml">../tabs/settings/Settings.qml</file>
+        <file alias="tabs/settings/SettingsButton.qml">../tabs/settings/SettingsButton.qml</file>
+        <file alias="tabs/trainer/Trainer.qml">../tabs/trainer/Trainer.qml</file>
+    </qresource>
+</RCC>
