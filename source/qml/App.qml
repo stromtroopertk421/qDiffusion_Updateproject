@@ -22,17 +22,19 @@ ApplicationWindow {
         }
     }
 
-    Connections {
-        target: COORDINATOR
+    data: [
+        Connections {
+            target: COORDINATOR
 
-        function onShow() {
-            root.viewState = "installer"
-        }
+            function onShow() {
+                root.viewState = "installer"
+            }
 
-        function onProceed() {
-            root.viewState = "main"
+            function onProceed() {
+                root.viewState = "main"
+            }
         }
-    }
+    ]
 
     Loader {
         id: contentLoader
