@@ -50,7 +50,7 @@ GridView {
     }
 
     function getIndex(file) {
-        for(var i = 0; i < thumbView.model.length; i++) {
+        for(var i = 0; i < thumbView.count; i++) {
             if(thumbView.model.get(i)["file"] == file) {
                 return i
             }
@@ -112,7 +112,7 @@ GridView {
     }
 
     function applySelection() {
-        if(thumbView.model.length == 0) {
+        if(thumbView.count == 0) {
             selected = []
             selectedLength = 0
             return;
