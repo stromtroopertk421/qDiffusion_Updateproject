@@ -22,7 +22,12 @@ ApplicationWindow {
         }
     }
 
-    data: [
+    // Workaround: Qt 6.10+ can throw a hard warning when Connections is placed in
+    // ApplicationWindow.data. Parent it under an invisible Item instead.
+    Item {
+        id: coordinatorHooks
+        visible: false
+
         Connections {
             target: COORDINATOR
 
@@ -34,7 +39,7 @@ ApplicationWindow {
                 root.viewState = "main"
             }
         }
-    ]
+    }
 
     Loader {
         id: contentLoader
