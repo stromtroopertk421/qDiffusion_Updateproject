@@ -24,7 +24,7 @@ import platform
 IS_WIN = platform.system() == 'Windows'
 IS_MAC = platform.system() == 'Darwin'
 
-from PySide6.QtCore import Signal as pyqtSignal, Slot as pyqtSlot, Property as pyqtProperty, QObject, QUrl, QCoreApplication, Qt, QElapsedTimer, QThread, qInstallMessageHandler
+from PySide6.QtCore import Signal as pyqtSignal, Slot as pyqtSlot, Property as pyqtProperty, QObject, QUrl, QCoreApplication, Qt, QElapsedTimer, QThread, qInstallMessageHandler, QLibraryInfo
 from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterSingletonInstance, qmlRegisterSingletonType, qmlRegisterType
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
@@ -590,6 +590,21 @@ def _qt_env_logger(line):
     with open(CRASH_LOG_PATH, "a", encoding="utf-8") as f:
         f.write(f"{text}\n")
 
+
+def _force_qt_runtime_paths():
+    for env_var in (
+        "QML_IMPORT_PATH",
+        "QML2_IMPORT_PATH",
+        "QML_PLUGIN_PATH",
+        "QT_PLUGIN_PATH",
+        "QT_QPA_PLATFORM_PLUGIN_PATH",
+    ):
+        os.environ.pop(env_var, None)
+
+    plugins = QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath)
+    qml = QLibraryInfo.path(QLibraryInfo.LibraryPath.QmlImportsPath)
+    return plugins, qml
+
 def launch(url):
     import misc
 
@@ -603,6 +618,8 @@ def launch(url):
 
     if IS_WIN:
         misc.setAppID(APPID)
+
+    plugins, qml = _force_qt_runtime_paths()
     
     QCoreApplication.setAttribute(Qt.AA_UseDesktopOpenGL, True)
 
@@ -618,6 +635,9 @@ def launch(url):
         QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 
     app = Application([NAME])
+    if plugins:
+        QCoreApplication.setLibraryPaths([plugins])
+
     signal.signal(signal.SIGINT, lambda sig, frame: app.quit())
     app.startTimer(100)
 
@@ -626,9 +646,17 @@ def launch(url):
     app.endpoint = url
 
     engine = QQmlApplicationEngine()
+    if qml:
+        engine.addImportPath(qml)
 
     with open(CRASH_LOG_PATH, "a", encoding="utf-8") as f:
         f.write(f"GUI {datetime.datetime.now()}\n")
+        f.write(f"FORCED QT PLUGIN PATH: {plugins or '(none)'}\n")
+        f.write(f"FORCED QML IMPORT PATH: {qml or '(none)'}\n")
+
+    print(f"FORCED QT PLUGIN PATH: {plugins or '(none)'}", file=sys.stderr, flush=True)
+    print(f"FORCED QML IMPORT PATH: {qml or '(none)'}", file=sys.stderr, flush=True)
+
     dump_qt_env(_qt_env_logger, app=app, engine=engine)
 
     engine.quit.connect(app.quit)
