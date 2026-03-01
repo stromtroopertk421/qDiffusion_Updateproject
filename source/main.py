@@ -26,7 +26,7 @@ import platform
 IS_WIN = platform.system() == 'Windows'
 IS_MAC = platform.system() == 'Darwin'
 
-from PySide6.QtCore import Signal as pyqtSignal, Slot as pyqtSlot, Property as pyqtProperty, QObject, QUrl, QCoreApplication, Qt, QElapsedTimer, QThread, QTimer, qInstallMessageHandler, QLibraryInfo
+from PySide6.QtCore import Signal as pyqtSignal, Slot as pyqtSlot, Property as pyqtProperty, QObject, QUrl, QCoreApplication, Qt, QElapsedTimer, QTimer, qInstallMessageHandler, QLibraryInfo
 from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterSingletonInstance, qmlRegisterSingletonType, qmlRegisterType
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
@@ -48,56 +48,6 @@ class Application(QApplication):
     def event(self, e):
         return QApplication.event(self, e)
         
-def buildQMLRc():
-    qml_path = os.path.join("source", "qml")
-    qml_rc = os.path.join(qml_path, "qml.qrc")
-    if os.path.exists(qml_rc):
-        os.remove(qml_rc)
-
-    items = []
-
-    tabs = glob.glob(os.path.join("source", "tabs", "*"))
-    for tab in tabs:
-        for src in glob.glob(os.path.join(tab, "*.*")):
-            if src.split(".")[-1] in {"qml","svg"}:
-                dst = os.path.join(qml_path, os.path.relpath(src, "source"))
-                os.makedirs(os.path.dirname(dst), exist_ok=True)
-                shutil.copy(src, dst)
-                items += [dst]
-
-    items += glob.glob(os.path.join(qml_path, "*.qml"))
-    items += glob.glob(os.path.join(qml_path, "components", "*.qml"))
-    items += glob.glob(os.path.join(qml_path, "style", "*.qml"))
-    items += glob.glob(os.path.join(qml_path, "fonts", "*.ttf"))
-    items += glob.glob(os.path.join(qml_path, "icons", "*.svg"))
-
-    items = ''.join([f"\t\t<file>{os.path.relpath(f, qml_path )}</file>\n" for f in items])
-
-    contents = f"""<RCC>\n\t<qresource prefix="/">\n{items}\t</qresource>\n</RCC>"""
-
-    with open(qml_rc, "w") as f:
-        f.write(contents)
-
-def buildQMLPy():
-    qml_path = os.path.join("source", "qml")
-    qml_py = os.path.join(qml_path, "qml_rc.py")
-    qml_rc = os.path.join(qml_path, "qml.qrc")
-
-    if os.path.exists(qml_py):
-        os.remove(qml_py)
-    
-    startupinfo = None
-    if IS_WIN:
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-
-    status = subprocess.run(["pyside6-rcc", "-o", qml_py, qml_rc], capture_output=True, startupinfo=startupinfo)
-    if status.returncode != 0:
-        raise Exception(status.stderr.decode("utf-8", errors="replace"))
-
-    shutil.rmtree(os.path.join(qml_path, "tabs"))
-    os.remove(qml_rc)
-
 def loadTabs(app, backend):
     tabs = []
     for tab in glob.glob(os.path.join("source", "tabs", "*")):
@@ -120,16 +70,6 @@ def loadTabs(app, backend):
     
     tabs.sort(key=lambda tab: tab.priority)
     backend.registerTabs(tabs)
-
-class Builder(QThread):
-    def __init__(self, app, engine):
-        super().__init__()
-        self.app = app
-        self.engine = engine
-    
-    def run(self):
-        buildQMLRc()
-        buildQMLPy()
 
 def _requirement_satisfied(requirement: Requirement, installed_version: str, enforce_version: bool) -> bool:
     if not enforce_version or not str(requirement.specifier):
@@ -305,8 +245,6 @@ class Coordinator(QObject):
         super().__init__(app)
         self.app = app
         self.engine = engine
-        self.builder = Builder(app, engine)
-        self.builder.finished.connect(self.loaded)
         self.installer = None
 
         self._needRestart = False
@@ -722,10 +660,9 @@ def _validate_applicationwindow_content(qml_root):
 
 def launch(url):
     import misc
+    import qml.qml_rc
 
     _qml_warnings.clear()
-
-    prepareQmlResources()
 
     if url:
         sgnl = misc.Signaller()
@@ -813,14 +750,6 @@ def launch(url):
 def ready():
     qmlRegisterSingletonType(QUrl("qrc:/Common.qml"), "gui", 1, 0, "COMMON")
 
-
-def prepareQmlResources():
-    buildQMLRc()
-    buildQMLPy()
-
-    # qml.qml_rc is generated at runtime; import it only after build
-    # completion so the current resource bundle is what gets registered.
-    import qml.qml_rc
 
 def start(engine, app):
     import gui
