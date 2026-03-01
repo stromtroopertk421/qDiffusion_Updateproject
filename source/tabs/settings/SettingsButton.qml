@@ -1,8 +1,6 @@
 import QtQuick
-import QtQuick.Controls
 import gui
 
-import "../compat"
 import "../../style"
 import "../../components"
 
