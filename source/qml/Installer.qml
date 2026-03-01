@@ -1,47 +1,65 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
 import QtQuick.Layouts
-import gui 1.0
+import gui
 
 import "style"
 import "components"
 
 FocusReleaser {
     id: root
+
     property var window
     property var spinner
+
     anchors.fill: parent
-    
+
     Component.onCompleted: {
-        spinner.visible = false
+        if (spinner) {
+            spinner.visible = false
+        }
     }
 
     function tr(str, file = "Installer.qml") {
         return TRANSLATOR.instance.translate(str, file)
     }
 
+    function packageVisible(packageName) {
+        return packageName !== "pip" && packageName !== "wheel"
+    }
+
+    function packageLabel(packageName) {
+        return String(packageName).split(" @ ")[0]
+    }
+
     Connections {
         target: COORDINATOR
+
         function onProceed() {
-            button.disabled = true
             choice.disabled = true
+            installButton.disabled = true
+        }
+
+        function onOutput(output) {
+            outputArea.text += output + "\n"
+            outputArea.area.cursorPosition = Math.max(0, outputArea.text.length - 1)
         }
     }
 
     Rectangle {
         anchors.fill: parent
         color: COMMON.bg00
-    
-        Column {
+
+        ColumnLayout {
             anchors.centerIn: parent
             width: 300
             height: parent.height - 200
+            spacing: 8
 
             SText {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
                 text: root.tr("Requirements")
-                width: parent.width
-                height: 40
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
                 pointSize: 10.8
@@ -50,15 +68,17 @@ FocusReleaser {
 
             OChoice {
                 id: choice
-                width: 300
-                height: 30
+                Layout.fillWidth: true
+                Layout.preferredHeight: 30
                 label: root.tr("Mode")
                 disabled: COORDINATOR.disable
                 currentIndex: COORDINATOR.mode
                 entries: COORDINATOR.modes
+
                 onCurrentIndexChanged: {
-                    currentIndex = currentIndex
-                    COORDINATOR.mode = currentIndex
+                    if (COORDINATOR.mode !== currentIndex) {
+                        COORDINATOR.mode = currentIndex
+                    }
                 }
 
                 function display(text) {
@@ -66,88 +86,90 @@ FocusReleaser {
                 }
             }
 
-            Item {
-                width: 300
-                height: 200
-                Rectangle {
-                    anchors.fill: parent
-                    anchors.margins: 2
-                    anchors.bottomMargin: 0
-                    border.color: COMMON.bg4
-                    color: "transparent"
-                    ListView {
-                        id: packageList
-                        anchors.fill: parent
-                        anchors.margins: 1
-                        clip: true
-                        model: COORDINATOR.packages
-                        boundsBehavior: Flickable.StopAtBounds
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 200
+                border.color: COMMON.bg4
+                color: "transparent"
 
-                        ScrollBar.vertical: SScrollBarV {
-                            id: scrollBar
-                            totalLength: packageList.contentHeight
-                            showLength: packageList.height
+                ListView {
+                    id: packageList
+                    anchors.fill: parent
+                    anchors.margins: 1
+                    clip: true
+                    model: COORDINATOR.packages
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    ScrollBar.vertical: SScrollBarV {
+                        totalLength: packageList.contentHeight
+                        showLength: packageList.height
+                    }
+
+                    delegate: Rectangle {
+                        required property string modelData
+                        required property int index
+
+                        readonly property bool rowVisible: root.packageVisible(modelData)
+
+                        width: packageList.width
+                        height: rowVisible ? 20 : 0
+                        visible: rowVisible
+                        color: index % 2 === 0 ? COMMON.bg0 : COMMON.bg00
+
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "green"
+                            opacity: 0.1
+                            visible: COORDINATOR.installed.includes(modelData)
                         }
 
-                        delegate: Rectangle {
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "yellow"
+                            opacity: 0.1
+                            visible: COORDINATOR.installing === modelData
 
-                            color: (index % 2 == 0 ? COMMON.bg0 : COMMON.bg00)
-                            width: packageList.width
-                            visible: !(modelData == "pip" || modelData == "wheel")
-                            height: visible ? 20 : 0
-
-                            Rectangle {
-                                color: "green"
-                                anchors.fill: parent
-                                opacity: 0.1
-                                visible: COORDINATOR.installed.includes(modelData)
-                            }
-
-                            Rectangle {
-                                color: "yellow"
-                                anchors.fill: parent
-                                opacity: 0.1
-                                visible: COORDINATOR.installing == modelData
-                                onVisibleChanged: {
-                                    if(visible) {
-                                        packageList.positionViewAtIndex(index, ListView.Contain)
-                                    }
+                            onVisibleChanged: {
+                                if (visible) {
+                                    packageList.positionViewAtIndex(index, ListView.Contain)
                                 }
                             }
+                        }
 
-                            SText {
-                                text: modelData.split(" @ ")[0]
-                                width: parent.width
-                                height: 20
-                                verticalAlignment: Text.AlignVCenter
-                                horizontalAlignment: Text.AlignHCenter
-                                pointSize: 9.8
-                                color: COMMON.fg1
-                            }
+                        SText {
+                            width: parent.width
+                            height: 20
+                            text: root.packageLabel(modelData)
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            pointSize: 9.8
+                            color: COMMON.fg1
                         }
                     }
                 }
             }
 
             SButton {
-                id: button
-                width: 300
-                height: 30
-                label: COORDINATOR.disable ? root.tr("Cancel") : (COORDINATOR.packages.length == 0 ? root.tr("Proceed") : root.tr("Install"))
-                
+                id: installButton
+                Layout.fillWidth: true
+                Layout.preferredHeight: 30
+                label: COORDINATOR.disable
+                    ? root.tr("Cancel")
+                    : (COORDINATOR.packages.length === 0 ? root.tr("Proceed") : root.tr("Install"))
+
                 onPressed: {
-                    if(!COORDINATOR.disable) {
+                    if (!COORDINATOR.disable) {
                         outputArea.text = ""
                     }
                     COORDINATOR.install()
-                }   
+                }
             }
 
             SText {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 30
                 visible: COORDINATOR.needRestart
                 text: root.tr("Restart required")
-                width: parent.width
-                height: 30
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
                 pointSize: 9.8
@@ -155,24 +177,24 @@ FocusReleaser {
             }
 
             Item {
-                width: parent.width
-                height: 30
+                Layout.fillWidth: true
+                Layout.preferredHeight: 30
             }
 
             Rectangle {
-                x: -parent.width
-                width: parent.width*3
-                height: 120
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: parent.width * 3
+                Layout.preferredHeight: 120
                 border.width: 1
                 border.color: COMMON.bg4
                 color: "transparent"
 
                 SText {
                     id: versionLabel
-                    text: root.tr("Enforce versions?")
                     anchors.bottom: versionCheck.bottom
                     anchors.right: versionCheck.left
                     rightPadding: 7
+                    text: root.tr("Enforce versions?")
                     pointSize: 9.8
                     color: COMMON.fg2
                     opacity: 0.9
@@ -190,49 +212,28 @@ FocusReleaser {
                     color: "transparent"
 
                     Image {
-                        id: versionCheckTick
-                        width: 16
-                        height: 16
-                        visible: COORDINATOR.enforceVersions
                         anchors.centerIn: parent
+                        width: Math.max(0, parent.width - 4)
+                        height: width
                         source: "qrc:/icons/tick.svg"
-                        sourceSize: Qt.size(parent.width, parent.height)
-                    }
-
-                    ColorOverlay {
-                        id: color
-                        visible: versionCheckTick.visible
-                        anchors.fill: versionCheckTick
-                        source: versionCheckTick
-                        color: COMMON.bg7
+                        sourceSize: Qt.size(width, height)
+                        visible: COORDINATOR.enforceVersions
                     }
 
                     MouseArea {
                         anchors.fill: parent
-                        onPressed: {
-                            COORDINATOR.enforceVersions = !COORDINATOR.enforceVersions
-                        }
+                        onPressed: COORDINATOR.enforceVersions = !COORDINATOR.enforceVersions
                     }
                 }
 
                 STextArea {
                     id: outputArea
                     anchors.fill: parent
-
                     area.color: COMMON.fg2
                     pointSize: 9.8
                     monospace: true
-
-                    Connections {
-                        target: COORDINATOR
-                        function onOutput(output) {
-                            outputArea.text += output + "\n"
-                            outputArea.area.cursorPosition = outputArea.text.length-1
-                        }
-                    }
                 }
             }
-
         }
     }
 }
