@@ -1,5 +1,4 @@
 source/qml/tabs
-source/qml/qml_rc.py
 source/qml/qml.rc
 *.log
 .vscode
