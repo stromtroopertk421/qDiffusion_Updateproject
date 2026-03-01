@@ -77,9 +77,10 @@ Item {
 
                 property var highlight: activeFocus || contextMenu.opened
 
-                RectangularGlow {
-                    anchors.fill: trueFrame
-                    glowRadius: 5
+                SGlow {
+                    target: trueFrame
+                    source: trueFrame
+                    radius: 5
                     opacity: 0.4
                     spread: 0.2
                     color: "black"
