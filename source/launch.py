@@ -40,21 +40,89 @@ def log(message):
     with open(LOG_PATH, "a", encoding="utf-8") as f:
         f.write(line + "\n")
 
-def get_env():
-    env = {k:v for k,v in os.environ.items() if not k.startswith("QT") and not k.startswith("PIP") and not k.startswith("PYTHON")}
+
+def _is_qt_path_entry(path_entry):
+    if not path_entry:
+        return False
+
+    normalized = path_entry.replace("/", "\\").lower()
+    qt_markers = [
+        "\\qt\\",
+        "\\qt5",
+        "\\qt6",
+        "\\qt creator",
+        "\\qtcreator",
+        "\\qt-sdk",
+        "\\qtsdk",
+    ]
+    return any(marker in normalized for marker in qt_markers)
+
+
+def _sanitize_path_entries(path_entries):
+    clean_entries = []
+    removed_qt_entries = []
+    seen = set()
+
+    for entry in path_entries:
+        trimmed = entry.strip()
+        if not trimmed:
+            continue
+        if _is_qt_path_entry(trimmed):
+            removed_qt_entries.append(trimmed)
+            continue
+        dedupe_key = trimmed.lower() if IS_WIN else trimmed
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        clean_entries.append(trimmed)
+
+    return clean_entries, removed_qt_entries
+
+
+def get_env(with_debug=False):
+    prefixes_to_strip = ("QT", "PIP", "PYTHON")
+    explicit_env_keys_to_strip = {
+        "QML_IMPORT_PATH",
+        "QML2_IMPORT_PATH",
+        "QML_PLUGIN_PATH",
+        "QT_PLUGIN_PATH",
+        "QT_QPA_PLATFORM_PLUGIN_PATH",
+    }
+
+    removed_env_keys = []
+    env = {}
+    for key, value in os.environ.items():
+        if key.startswith(prefixes_to_strip) or key in explicit_env_keys_to_strip:
+            removed_env_keys.append(key)
+            continue
+        env[key] = value
+
     env["VIRTUAL_ENV"] = VENV_DIR
     env["PIP_CACHE_DIR"] = os.path.join(VENV_DIR, "cache")
     env["PIP_CONFIG_FILE"] = os.devnull
+
+    path_entries = env.get("PATH", "").split(os.pathsep)
+    sanitized_path_entries, removed_qt_paths = _sanitize_path_entries(path_entries)
+
     current_path = env.get("PATH", "")
+    venv_bin = os.path.join(VENV_DIR, "Scripts" if IS_WIN else "bin")
     if IS_WIN:
-        env["PATH"] = VENV_DIR+"\\Scripts;" + current_path
+        env["PATH"] = os.pathsep.join([venv_bin] + sanitized_path_entries)
     else:
-        env["PATH"] = VENV_DIR+"/bin:" + current_path
+        env["PATH"] = os.pathsep.join([venv_bin] + sanitized_path_entries)
     
     if not IS_WIN and not "HSA_OVERRIDE_GFX_VERSION" in env:
         env["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
     if not IS_WIN and not "MIOPEN_LOG_LEVEL" in env:
         env["MIOPEN_LOG_LEVEL"] = "4"
+
+    if with_debug:
+        final_path_entries = env.get("PATH", "").split(os.pathsep)
+        preview_count = 10
+        log(f"CHILD ENV REMOVED VARS ({len(removed_env_keys)}): {sorted(removed_env_keys)}")
+        log(f"CHILD ENV REMOVED QT PATHS ({len(removed_qt_paths)}): {removed_qt_paths}")
+        log(f"CHILD PATH PREVIEW (first {preview_count}): {final_path_entries[:preview_count]}")
+
     return env
 
 def restart():
@@ -64,10 +132,11 @@ def restart():
 
     command = [venv_python, LAUNCH_PATH] + sys.argv[1:]
     log(f"RESTARTING VIA: {' '.join(command)}")
+    child_env = get_env(with_debug=True)
     if IS_WIN:
-        subprocess.Popen(command, env=get_env(), creationflags=0x00000008 | 0x00000200)
+        subprocess.Popen(command, env=child_env, creationflags=0x00000008 | 0x00000200)
     else:
-        subprocess.Popen(command, env=get_env())
+        subprocess.Popen(command, env=child_env)
     exit()
 
 def get_venv_python(gui=False):
