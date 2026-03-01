@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import Qt.labs.platform
 
 import gui
@@ -130,14 +131,29 @@ Item {
                         }
                     }
 
-                    RectangularGlow {
+                    MultiEffect {
                         visible: trueFrame.valid
                         anchors.fill: trueFrame
-                        glowRadius: 5
-                        opacity: 0.4
-                        spread: 0.2
-                        color: "black"
-                        cornerRadius: 10
+                        source: trueFrameShadowSource
+                        autoPaddingEnabled: true
+                        shadowEnabled: true
+                        shadowColor: "#66000000"
+                        shadowBlur: 0.45
+                        shadowVerticalOffset: 0
+                        shadowHorizontalOffset: 0
+                    }
+
+                    Item {
+                        id: trueFrameShadowSource
+                        visible: false
+                        width: trueFrame.width
+                        height: trueFrame.height
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: 10
+                            color: "black"
+                        }
                     }
 
                     TransparencyShader {
@@ -655,11 +671,11 @@ Item {
                         antialiasing: true
                     }
 
-                    ColorOverlay {
-                        id: color
+                    MultiEffect {
                         anchors.fill: warningImg
                         source: warningImg
-                        color: "#ffe459"
+                        colorization: 1.0
+                        colorizationColor: "#ffe459"
                     }
                 }
 
@@ -1047,13 +1063,28 @@ Item {
                 border.width: 1
                 border.color: (itmFooter.activeFocus || addDrop.containsDrag) ? COMMON.bg6 : "transparent"
 
-                RectangularGlow {
+                MultiEffect {
                     anchors.fill: addButton
-                    glowRadius: 5
-                    opacity: 0.3
-                    spread: 0.2
-                    color: "black"
-                    cornerRadius: 10
+                    source: addButtonShadowSource
+                    autoPaddingEnabled: true
+                    shadowEnabled: true
+                    shadowColor: "#4d000000"
+                    shadowBlur: 0.45
+                    shadowVerticalOffset: 0
+                    shadowHorizontalOffset: 0
+                }
+
+                Item {
+                    id: addButtonShadowSource
+                    visible: false
+                    width: addButton.width
+                    height: addButton.height
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: 10
+                        color: "black"
+                    }
                 }
 
                 Rectangle {
