@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import gui 1.0
 
@@ -21,12 +21,13 @@ Item {
         anchors.centerIn: parent
         smooth: parent.smooth
         antialiasing: parent.smooth
+        visible: false
     }
 
-    ColorOverlay {
-        id: color
+    MultiEffect {
         anchors.fill: img
         source: img
-        color: iconColor
+        colorization: 1.0
+        colorizationColor: iconColor
     }
 }

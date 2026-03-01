@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import gui 1.0
 
@@ -144,14 +144,6 @@ Item {
     Item {
         id: background
         anchors.fill: parent
-        RectangularGlow {
-            anchors.fill: bg
-            glowRadius: 5
-            opacity: 0.75
-            spread: 0.2
-            color: "black"
-            cornerRadius: 10
-        }
 
         Rectangle {
             id: bg
@@ -160,6 +152,17 @@ Item {
             color: COMMON.bg1
             border.width: 1
             border.color: COMMON.bg4
+        }
+
+        MultiEffect {
+            anchors.fill: bg
+            source: bg
+            shadowEnabled: true
+            shadowColor: "#d0000000"
+            shadowBlur: 0.45
+            shadowOpacity: 0.85
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 2
         }
 
         Rectangle {

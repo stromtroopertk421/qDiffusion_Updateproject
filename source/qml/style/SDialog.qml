@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import gui 1.0
 
@@ -21,15 +21,6 @@ Dialog {
     padding: 5
 
     background: Item {
-        RectangularGlow {
-            anchors.fill: bg
-            glowRadius: 5
-            opacity: 0.75
-            spread: 0.2
-            color: "black"
-            cornerRadius: 10
-        }
-
         Rectangle {
             id: bg
             anchors.fill: parent
@@ -38,6 +29,18 @@ Dialog {
             border.width: 1
             border.color: COMMON.bg4
         }
+
+        MultiEffect {
+            anchors.fill: bg
+            source: bg
+            shadowEnabled: true
+            shadowColor: "#d0000000"
+            shadowBlur: 0.45
+            shadowOpacity: 0.85
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 2
+        }
+
         Rectangle {
             anchors.fill: parent
             anchors.margins: -2
