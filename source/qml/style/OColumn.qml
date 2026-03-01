@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
 
 import gui 1.0
 
@@ -99,7 +98,7 @@ Item {
             }
         }
         
-        Glow {
+        SGlow {
             opacity: 0.5
             anchors.fill: indicator
             radius: 2

@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import gui 1.0
 
@@ -51,18 +51,18 @@ MenuItem {
                 id: img
                 width: 20
                 height: 20
-                visible:  menuItem.checked
+                visible: false
                 anchors.centerIn: parent
                 source: "qrc:/icons/tick.svg"
                 sourceSize: Qt.size(parent.width, parent.height)
             }
 
-            ColorOverlay {
-                id: color
-                visible:  menuItem.checked
+            MultiEffect {
+                visible: menuItem.checked
                 anchors.fill: img
                 source: img
-                color: COMMON.fg2
+                colorization: 1.0
+                colorizationColor: COMMON.fg2
             }
         }
     }

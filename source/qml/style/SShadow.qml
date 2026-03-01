@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
 
 import gui 1.0
 
@@ -15,15 +14,15 @@ Item {
         anchors.fill: parent
         anchors.margins: 1
         color: root.color
+        border.width: 1
+        border.color: Qt.rgba(0, 0, 0, 0.45)
     }
 
-    layer.enabled: true
-    layer.effect: InnerShadow {
-        id: innerShadow
-        color: root.shadowColor
-        samples: root.samples
-        radius: root.radius
-        spread: 0
-        fast: true
+    Rectangle {
+        anchors.fill: parent
+        color: "transparent"
+        border.width: 2
+        border.color: root.shadowColor
+        opacity: 0.2
     }
 }

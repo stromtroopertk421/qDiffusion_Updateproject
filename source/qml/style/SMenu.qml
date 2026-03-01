@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import gui 1.0
 
@@ -24,29 +24,23 @@ Menu {
         implicitWidth: 150
         implicitHeight: menuItemSize
 
-        Item {
-            clip: root.clipShadow
-            anchors.fill: parent
-            anchors.margins: -10
-            anchors.topMargin: 0
-            RectangularGlow {
-                anchors.fill: parent
-                anchors.margins: 10
-                anchors.topMargin: 0
-                glowRadius: 5
-                //spread: 0.2
-                color: "black"
-                cornerRadius: 10
-            }
-        }
-        
         Rectangle {
+            id: bg
             anchors.fill: parent
             color: COMMON.bg3
             border.width: 1
             border.color: COMMON.bg4
         }
-    }
 
-    
+        MultiEffect {
+            anchors.fill: bg
+            source: bg
+            shadowEnabled: true
+            shadowColor: "#d0000000"
+            shadowBlur: 0.45
+            shadowOpacity: 0.85
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 2
+        }
+    }
 }
