@@ -1,7 +1,8 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 
-import "../compat"
 import "../../style"
 import "../../components"
 
@@ -194,7 +195,7 @@ GridView {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.NoButton
-        onWheel: {
+        onWheel: function(wheel) {
             scrollBar.doIncrement(wheel.angleDelta.y)
         }
     }
@@ -206,8 +207,14 @@ GridView {
 
     delegate: Thumbnail {
         id: thumb
-        width: cellWidth
-        height: cellHeight
+        required property int index
+        required property int sql_width
+        required property int sql_height
+        required property var sql_parameters
+        required property string sql_file
+
+        width: thumbView.cellWidth
+        height: thumbView.cellHeight
         padding: thumbView.padding
         
         property int sourceWidth: sql_width
