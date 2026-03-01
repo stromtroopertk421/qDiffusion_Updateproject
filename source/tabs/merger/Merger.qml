@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import QtQuick.Layouts
 import Qt.labs.platform
 
@@ -1273,11 +1274,12 @@ Rectangle {
                     anchors.centerIn: parent
                 }
 
-                ColorOverlay {
+                MultiEffect {
                     visible: placeholder.visible
                     anchors.fill: placeholder
                     source: placeholder
-                    color: COMMON.bg3
+                    colorization: 1
+                    colorizationColor: COMMON.bg3
                 }
 
                 MovableItem {
@@ -1297,9 +1299,15 @@ Rectangle {
                         height: Math.ceil(parent.item.height)
                     }
 
-                    SGlow {
+                    MultiEffect {
                         visible: movable.item.width > 0
-                        target: movable.item
+                        anchors.fill: item
+                        source: item
+
+                        shadowEnabled: true
+                        shadowColor: "black"
+                        shadowOpacity: 0.7
+                        shadowBlur: 0.6
                     }
 
                     ImageDisplay {
@@ -1329,13 +1337,14 @@ Rectangle {
             border.color: COMMON.bg4
             border.width: 2
 
-            RectangularGlow {
+            MultiEffect {
                 anchors.fill: genButton
-                glowRadius: 8
-                opacity: 0.4
-                spread: 0.1
-                color: "black"
-                cornerRadius: 10
+                source: genButton
+
+                shadowEnabled: true
+                shadowColor: "black"
+                shadowOpacity: 0.4
+                shadowBlur: 0.8
             }
 
 
@@ -1465,13 +1474,14 @@ Rectangle {
 
                         property var highlight: selected || contextMenu.opened
 
-                        RectangularGlow {
+                        MultiEffect {
                             anchors.fill: trueFrame
-                            glowRadius: 5
-                            opacity: 0.4
-                            spread: 0.2
-                            color: "black"
-                            cornerRadius: 10
+                            source: trueFrame
+
+                            shadowEnabled: true
+                            shadowColor: "black"
+                            shadowOpacity: 0.4
+                            shadowBlur: 0.5
                         }
 
                         TransparencyShader {
