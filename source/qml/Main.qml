@@ -1,8 +1,7 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
 import QtQuick.Layouts
-import gui 1.0
+import gui
 
 import "style"
 import "components"
@@ -10,6 +9,7 @@ import "components"
 FocusReleaser {
     property var window
     property var spinner
+    property bool firstShowHandled: false
     anchors.fill: parent
     layer.enabled: true
     opacity: 0.0
@@ -25,9 +25,23 @@ FocusReleaser {
         }
     }
     
-    Component.onCompleted: {
+    function runInitialShow() {
+        if (firstShowHandled)
+            return
+
+        firstShowHandled = true
         window.title = Qt.binding(function() { return TRANSLATOR.instance.translate(GUI.title, "Title"); })
         opacityAnimator.start()
+    }
+
+    onVisibleChanged: {
+        if (visible)
+            runInitialShow()
+    }
+
+    Component.onCompleted: {
+        if (visible)
+            runInitialShow()
     }
 
     Timer {
@@ -88,47 +102,60 @@ FocusReleaser {
         anchors.top: barDivider.bottom
         anchors.bottom: statusBar.top
 
-        currentIndex: GUI.tabNames.indexOf(GUI.currentTab)
+        currentIndex: {
+            var tabIndex = GUI.tabNames.indexOf(GUI.currentTab)
+            return tabIndex >= 0 ? tabIndex : 0
+        }
 
         function releaseFocus() {
             keyboardFocus.forceActiveFocus()
         }
 
-        function addTab() {
-            var errorTab = Qt.createComponent("qrc:/Error.qml")
-            if(errorTab.status != Component.Ready) {
-                console.error("ERROR", "Failed to load error tab component", errorTab.errorString())
-                return
-            }
+        onCurrentIndexChanged: {
+            releaseFocus()
+        }
 
-            for(var i = 0; i < GUI.tabSources.length; i++) {
-                var component = Qt.createComponent(GUI.tabSources[i])
-                if(component.status != Component.Ready) {
-                    var errorString = component.errorString()
-                    console.error("ERROR", errorString)
-                    var errorObject = errorTab.createObject(stackLayout, {error: errorString})
-                    if(errorObject == null) {
-                        console.error("ERROR", "Failed to instantiate fallback error tab", errorTab.errorString())
+        Repeater {
+            model: GUI.tabSources
+
+            Loader {
+                id: tabLoader
+                required property string modelData
+                property string tabError: ""
+                property Component tabComponent: Qt.createComponent(modelData)
+
+                Component {
+                    id: errorTabComponent
+                    Error {
+                        error: tabError
                     }
-                } else {
-                    var tabObject = component.createObject(stackLayout)
-                    if(tabObject == null) {
-                        console.error("ERROR", "Failed to create tab object", GUI.tabSources[i], component.errorString())
-                        var fallback = errorTab.createObject(stackLayout, {error: component.errorString()})
-                        if(fallback == null) {
-                            console.error("ERROR", "Failed to instantiate fallback error tab", errorTab.errorString())
-                        }
+                }
+
+                active: true
+                sourceComponent: tabComponent.status === Component.Ready ? tabComponent : errorTabComponent
+                asynchronous: false
+
+                function updateErrorState() {
+                    if (tabComponent.status === Component.Error) {
+                        tabError = tabComponent.errorString()
+                        console.error("ERROR", "Failed to load tab", modelData, tabError)
+                    }
+                }
+
+                onStatusChanged: {
+                    if (status === Loader.Error)
+                        console.error("ERROR", "Failed to instantiate tab view", modelData)
+                }
+
+                Component.onCompleted: updateErrorState()
+
+                Connections {
+                    target: tabComponent
+                    function onStatusChanged() {
+                        tabLoader.updateErrorState()
                     }
                 }
             }
-        }
-
-        Component.onCompleted: {
-            addTab()
-        }
-
-        onCurrentIndexChanged: {
-            releaseFocus()
         }
     }
 
@@ -192,7 +219,10 @@ FocusReleaser {
                 }
             }
         }
-        Keys.forwardTo: [stackLayout.children[stackLayout.currentIndex]]
+        Keys.forwardTo: {
+            var activeTab = stackLayout.itemAt(stackLayout.currentIndex)
+            return activeTab ? [activeTab] : []
+        }
     }
 
     Item {
