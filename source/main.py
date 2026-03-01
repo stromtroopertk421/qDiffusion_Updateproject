@@ -26,7 +26,7 @@ import platform
 IS_WIN = platform.system() == 'Windows'
 IS_MAC = platform.system() == 'Darwin'
 
-from PySide6.QtCore import Signal as pyqtSignal, Slot as pyqtSlot, Property as pyqtProperty, QObject, QUrl, QCoreApplication, Qt, QElapsedTimer, QTimer, qInstallMessageHandler, QLibraryInfo
+from PySide6.QtCore import Signal as pyqtSignal, Slot as pyqtSlot, Property as pyqtProperty, QObject, QUrl, QCoreApplication, Qt, QElapsedTimer, QTimer, qInstallMessageHandler, QLibraryInfo, QThread
 from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterSingletonInstance, qmlRegisterSingletonType, qmlRegisterType
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
