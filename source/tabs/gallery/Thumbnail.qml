@@ -1,8 +1,8 @@
 import QtQuick
-import Qt5Compat.GraphicalEffects
 
-import gui 1.0
+import gui
 
+import "../compat"
 import "../../style"
 import "../../components"
 
