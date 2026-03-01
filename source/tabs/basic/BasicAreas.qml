@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import Qt.labs.platform
 
 import gui
 import "../compat"
