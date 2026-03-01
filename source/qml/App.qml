@@ -37,7 +37,26 @@ ApplicationWindow {
     Loader {
         id: contentLoader
         anchors.fill: parent
-        sourceComponent: root.viewState === "installer" ? installerView : (root.viewState === "main" ? mainView : null)
+    }
+
+    function updateContentView() {
+        if (root.viewState === "installer") {
+            contentLoader.setSource("Installer.qml", {
+                "window": root,
+                "spinner": splashSpinner
+            })
+            return
+        }
+
+        if (root.viewState === "main") {
+            contentLoader.setSource("Main.qml", {
+                "window": root,
+                "spinner": splashSpinner
+            })
+            return
+        }
+
+        contentLoader.source = ""
     }
 
     Item {
@@ -59,23 +78,10 @@ ApplicationWindow {
         }
     }
 
-    Component {
-        id: installerView
-        Installer {
-            window: root
-            spinner: splashSpinner
-        }
-    }
-
-    Component {
-        id: mainView
-        Main {
-            window: root
-            spinner: splashSpinner
-        }
-    }
+    onViewStateChanged: updateContentView()
 
     Component.onCompleted: {
+        updateContentView()
         Qt.callLater(root.loadCoordinator)
     }
 }
