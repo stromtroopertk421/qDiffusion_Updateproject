@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import QtQuick.Layouts
 import gui
 
@@ -444,12 +445,13 @@ Rectangle {
                 anchors.centerIn: view.item
             }
 
-            ColorOverlay {
+            MultiEffect {
                 visible: placeholder.visible
                 anchors.fill: placeholder
                 source: placeholder
-                color: COMMON.bg3
-            }  
+                colorization: 1.0
+                colorizationColor: COMMON.bg3
+            }
         }
 
         Rectangle {
