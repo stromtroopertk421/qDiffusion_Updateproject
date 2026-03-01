@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import gui 1.0
 
@@ -53,13 +53,14 @@ Dialog {
     }
 
     background: Item {
-        RectangularGlow {
+        MultiEffect {
             anchors.fill: bg
-            glowRadius: 5
-            opacity: 0.75
-            spread: 0.2
-            color: "black"
-            cornerRadius: 10
+            source: bg
+            shadowEnabled: true
+            shadowColor: "#bf000000"
+            shadowBlur: 0.35
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 0
         }
 
         Rectangle {
@@ -155,18 +156,18 @@ Dialog {
                         id: img
                         width: 16
                         height: 16
-                        visible:  modelData.checked
+                        visible: false
                         anchors.centerIn: parent
                         source: "qrc:/icons/tick.svg"
                         sourceSize: Qt.size(parent.width, parent.height)
                     }
 
-                    ColorOverlay {
-                        id: color
+                    MultiEffect {
                         visible:  modelData.checked
                         anchors.fill: img
                         source: img
-                        color: COMMON.fg1
+                        colorization: 1.0
+                        colorizationColor: COMMON.fg1
                     }
                 }
 
