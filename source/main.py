@@ -15,6 +15,8 @@ import importlib
 import json
 import hashlib
 import argparse
+import re
+from pathlib import Path
 from importlib import metadata
 
 from packaging.requirements import Requirement
@@ -605,6 +607,82 @@ def _force_qt_runtime_paths():
     qml = QLibraryInfo.path(QLibraryInfo.LibraryPath.QmlImportsPath)
     return plugins, qml
 
+
+def _is_truthy_env(value):
+    if value is None:
+        return False
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _is_within_root(path_text, root):
+    if not path_text:
+        return False
+    try:
+        path_obj = Path(path_text).resolve(strict=False)
+        path_obj.relative_to(root)
+        return True
+    except Exception:
+        return False
+
+
+def _collect_external_qt_paths(engine_import_paths=None):
+    runtime_root = Path(sys.prefix).resolve(strict=False)
+    suspicious = []
+
+    def _looks_like_qt_sdk_path(path_text):
+        normalized = path_text.replace("/", "\\")
+        return bool(re.search(r"(^|\\)Qt([\\]|$)", normalized, flags=re.IGNORECASE))
+
+    path_value = os.environ.get("PATH", "")
+    for raw_entry in path_value.split(os.pathsep):
+        entry = raw_entry.strip().strip('"')
+        if not entry:
+            continue
+
+        if _looks_like_qt_sdk_path(entry):
+            if not _is_within_root(entry, runtime_root):
+                suspicious.append(("PATH", entry))
+
+    qlibrary_candidates = {
+        "QLibraryInfo.PluginsPath": QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath),
+        "QLibraryInfo.QmlImportsPath": QLibraryInfo.path(QLibraryInfo.LibraryPath.QmlImportsPath),
+        "QLibraryInfo.LibrariesPath": QLibraryInfo.path(QLibraryInfo.LibraryPath.LibrariesPath),
+        "QLibraryInfo.BinariesPath": QLibraryInfo.path(QLibraryInfo.LibraryPath.BinariesPath),
+    }
+    for source, candidate in qlibrary_candidates.items():
+        if candidate and not _is_within_root(candidate, runtime_root):
+            suspicious.append((source, candidate))
+
+    for candidate in engine_import_paths or []:
+        if candidate and _looks_like_qt_sdk_path(candidate) and not _is_within_root(candidate, runtime_root):
+            suspicious.append(("engine.importPathList()", candidate))
+
+    deduped = []
+    seen = set()
+    for source, candidate in suspicious:
+        key = (source, os.path.normcase(candidate))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append((source, candidate))
+    return deduped
+
+
+def _enforce_strict_qt_env(engine_import_paths=None):
+    if not _is_truthy_env(os.environ.get("STRICT_QT_ENV")):
+        return
+
+    suspicious = _collect_external_qt_paths(engine_import_paths=engine_import_paths)
+    if not suspicious:
+        return
+
+    details = "\n".join([f"- {source}: {path}" for source, path in suspicious])
+    raise RuntimeError(
+        "Detected external Qt/QML paths (C:\\Qt...). This app must run using venv PySide6 Qt only. "
+        "Remove Qt SDK from PATH or use the launcher.\n"
+        f"Detected paths:\n{details}"
+    )
+
 def launch(url):
     import misc
 
@@ -620,6 +698,7 @@ def launch(url):
         misc.setAppID(APPID)
 
     plugins, qml = _force_qt_runtime_paths()
+    _enforce_strict_qt_env()
     
     QCoreApplication.setAttribute(Qt.AA_UseDesktopOpenGL, True)
 
@@ -648,6 +727,8 @@ def launch(url):
     engine = QQmlApplicationEngine()
     if qml:
         engine.addImportPath(qml)
+
+    _enforce_strict_qt_env(engine_import_paths=engine.importPathList())
 
     with open(CRASH_LOG_PATH, "a", encoding="utf-8") as f:
         f.write(f"GUI {datetime.datetime.now()}\n")
