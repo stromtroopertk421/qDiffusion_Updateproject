@@ -9,6 +9,39 @@ import shutil
 
 from paths import ensure_project_cwd
 
+QT_TRACE_FLAG = "--qt-trace"
+QT_TRACE_MARKER = "QDIFFUSION_QT_TRACE"
+
+
+def _consume_qt_trace_flag(argv):
+    filtered = [argv[0]]
+    qt_trace_enabled = False
+
+    for arg in argv[1:]:
+        lowered = arg.lower()
+        if lowered == QT_TRACE_FLAG:
+            qt_trace_enabled = True
+            continue
+        if lowered.startswith(QT_TRACE_FLAG + "="):
+            value = lowered.split("=", 1)[1].strip()
+            if value not in {"0", "false", "no", "off"}:
+                qt_trace_enabled = True
+            continue
+        filtered.append(arg)
+
+    return filtered, qt_trace_enabled
+
+
+_filtered_argv, _qt_trace_cli_enabled = _consume_qt_trace_flag(sys.argv)
+sys.argv = _filtered_argv
+
+if _qt_trace_cli_enabled:
+    os.environ[QT_TRACE_MARKER] = "1"
+
+if os.environ.get(QT_TRACE_MARKER) == "1":
+    os.environ["QML_IMPORT_TRACE"] = "1"
+    os.environ["QT_DEBUG_PLUGINS"] = "1"
+
 PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 VENV_DIR = os.path.join(PROJECT_DIR, "venv")
 LAUNCH_PATH = os.path.abspath(__file__)
@@ -116,6 +149,11 @@ def get_env(with_debug=False):
     if not IS_WIN and not "MIOPEN_LOG_LEVEL" in env:
         env["MIOPEN_LOG_LEVEL"] = "4"
 
+    if os.environ.get(QT_TRACE_MARKER) == "1":
+        env[QT_TRACE_MARKER] = "1"
+        env["QML_IMPORT_TRACE"] = "1"
+        env["QT_DEBUG_PLUGINS"] = "1"
+
     if with_debug:
         final_path_entries = env.get("PATH", "").split(os.pathsep)
         preview_count = 10
@@ -210,6 +248,8 @@ if __name__ == "__main__":
     ensure_project_cwd()
     sys.excepthook = exceptHook
     log(f"LAUNCH START cwd={os.getcwd()} project={PROJECT_DIR} python={PYTHON_RUN}")
+    if os.environ.get(QT_TRACE_MARKER) == "1":
+        log("QT TRACE ENABLED")
 
     if sys.version_info < (3, 14):
         print(f"Python 3.14 or greater is required. Have Python {sys.version_info[0]}.{sys.version_info[1]}.")
