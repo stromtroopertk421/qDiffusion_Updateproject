@@ -23,17 +23,19 @@ ListView {
     }
 
     delegate: Item {
+        required property string modelData
+
         x: 10
         width: root.width - 2*x
         height: 25
         SColumnButton {
             id: button
-            label: modelData
+            label: parent.modelData
             height: 25
             width: parent.width
-            active: EXPLORER.currentTab == mode && EXPLORER.currentFolder == modelData
+            active: EXPLORER.currentTab == root.mode && EXPLORER.currentFolder == parent.modelData
             onPressed: {
-                EXPLORER.setCurrent(mode, modelData)
+                EXPLORER.setCurrent(root.mode, parent.modelData)
             }
             AdvancedDropArea {
                 id: basicDrop
@@ -49,13 +51,13 @@ ListView {
                     id: dragTimer
                     interval: 200
                     onTriggered: {
-                        EXPLORER.setCurrent(mode, modelData)
+                        EXPLORER.setCurrent(root.mode, parent.modelData)
                     }
                 }
                 onDropped: {
                     var model = EXPLORER.onDrop(mimeData)
                     if(model != "") {
-                        root.move(model, mode, modelData)
+                        root.move(model, root.mode, parent.modelData)
                     }
                 }
             }
