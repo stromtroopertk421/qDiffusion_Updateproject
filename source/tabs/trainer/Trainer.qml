@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import QtQuick.Layouts
 import Qt.labs.platform
 
@@ -895,11 +896,12 @@ Rectangle {
                             anchors.centerIn: parent
                         }
 
-                        ColorOverlay {
+                        MultiEffect {
                             visible: placeholderList.visible
                             anchors.fill: placeholderList
                             source: placeholderList
-                            color: COMMON.bg3
+                            colorization: 1.0
+                            colorizationColor: COMMON.bg3
                         }
 
                         ListView {
@@ -1116,11 +1118,12 @@ Rectangle {
                             anchors.centerIn: parent
                         }
 
-                        ColorOverlay {
+                        MultiEffect {
                             visible: placeholderImage.visible
                             anchors.fill: placeholderImage
                             source: placeholderImage
-                            color: COMMON.bg3
+                            colorization: 1.0
+                            colorizationColor: COMMON.bg3
                         }
 
                         MovableImage {
